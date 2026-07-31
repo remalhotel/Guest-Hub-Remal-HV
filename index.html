@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remal Hotel & Villas - Guest Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAFAFA; color: #222222; }
+    .font-serif-luxury { font-family: 'Playfair Display', serif; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    .bg-remal-sand { background-color: #E2B383; }
+    .text-remal-sand { color: #DCA773; }
+    .remal-card { background: #FFFFFF; border: 1px solid #EAEAEA; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #printFolioSection, #printFolioSection * { visibility: visible !important; }
+      #printFolioSection {
+        display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 20px !important; box-sizing: border-box !important; background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <div id="printFolioSection" class="hidden"></div>
+
+  <!-- HEADER CLIENT -->
+  <header class="bg-white sticky top-0 z-50 border-b border-stone-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <h1 class="text-sm font-serif-luxury text-stone-900 font-bold tracking-widest">REMAL</h1>
+        <p class="text-[8px] text-stone-500 uppercase tracking-wider">Hotel & Villas</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <div id="langSelector" class="flex bg-stone-100 p-1 rounded-full border border-stone-200 text-[11px] font-semibold">
+          <button onclick="setLang('en')" id="btn-en" class="px-2.5 py-1 rounded-full bg-remal-sand text-white shadow-sm">EN</button>
+          <button onclick="setLang('ar')" id="btn-ar" class="px-2.5 py-1 rounded-full text-stone-600 hover:text-stone-900">العربية</button>
+          <button onclick="setLang('hi')" id="btn-hi" class="px-2.5 py-1 rounded-full text-stone-600 hover:text-stone-900">हिन्दी</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="announcementBanner" class="hidden bg-remal-sand text-white px-4 py-2.5 text-center text-xs font-medium tracking-wide shadow-sm">
+    <span id="announcementText">📢 Special Announcement</span>
+  </div>
+
+  <!-- INTERFACE CLIENT -->
+  <div id="clientView" class="max-w-md mx-auto px-4 py-6 space-y-6">
+    <div class="relative rounded-3xl overflow-hidden shadow-xl p-6 text-white space-y-6 bg-cover bg-center bg-no-repeat bg-stone-900" style="background-image: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('Remal_exterior_view2.jpg');">
+      <div class="text-center space-y-1">
+        <h2 class="text-2xl font-serif-luxury text-white font-normal tracking-wide drop-shadow-md" id="welcomeMsg">Welcome to Remal Hotel & Villas</h2>
+        <p class="text-[10px] text-stone-200 uppercase tracking-widest font-semibold drop-shadow" id="roomIndicator">Al Dhannah City • Guest Hub</p>
+      </div>
+
+      <div class="flex bg-black/40 backdrop-blur-md p-1.5 rounded-2xl text-[11px] font-medium border border-white/25 overflow-x-auto scrollbar-none">
+        <button onclick="switchGuestTab('request')" id="tabRequestBtn" class="flex-1 py-2.5 px-3 rounded-xl bg-white text-stone-900 font-bold shadow-md whitespace-nowrap">🔔 <span id="lblTabRequest">Service</span></button>
+        <button onclick="switchGuestTab('offers')" id="tabOffersBtn" class="flex-1 py-2.5 px-3 rounded-xl text-stone-200 hover:text-white whitespace-nowrap">🏷️ <span id="lblTabOffers">Offers</span></button>
+        <button onclick="switchGuestTab('facilities')" id="tabFacilitiesBtn" class="flex-1 py-2.5 px-3 rounded-xl text-stone-200 hover:text-white whitespace-nowrap">🏛️ <span id="lblTabFacilities">Facilities</span></button>
+        <button onclick="switchGuestTab('faq')" id="tabFaqBtn" class="flex-1 py-2.5 px-3 rounded-xl text-stone-200 hover:text-white whitespace-nowrap">❓ <span id="lblTabFaq">FAQ</span></button>
+      </div>
+    </div>
+
+    <!-- OFFERS SECTION -->
+    <div id="guestOffersSection" class="hidden space-y-5">
+      <div id="categoryFilters" class="flex space-x-2 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none"></div>
+      <div id="cardsContainer" class="space-y-5">
+        <p class="text-center text-xs text-stone-400 py-8" id="lblLoadingOffers">Loading live offers...</p>
+      </div>
+    </div>
+
+    <!-- FACILITIES SECTION -->
+    <div id="guestFacilitiesSection" class="hidden space-y-5">
+      <div class="text-center border-b border-stone-200 pb-3">
+        <h3 class="text-lg font-serif-luxury font-bold text-stone-900" id="facHeader">Hotel Facilities & Amenities</h3>
+        <p class="text-xs text-stone-500" id="facSub">Explore our premium venues and spaces</p>
+      </div>
+      <div id="facilitiesContainer" class="space-y-6"></div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div id="guestFaqSection" class="hidden space-y-5">
+      <div class="text-center border-b border-stone-200 pb-3">
+        <h3 class="text-lg font-serif-luxury font-bold text-stone-900" id="faqHeaderTitle">💡 Intelligent Assistant & FAQ</h3>
+        <p class="text-xs text-stone-500" id="faqHeaderSub">Instant answers to common hotel questions</p>
+      </div>
+      <div class="remal-card p-5 rounded-3xl space-y-4">
+        <input type="text" id="faqSearchInput" placeholder="🔍 Search question..." onkeyup="filterFaq()" class="w-full border border-stone-200 rounded-xl p-3 text-xs bg-stone-50 outline-none">
+        <div id="faqContainer" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+
+    <!-- REQUEST SECTION -->
+    <div id="guestRequestSection" class="space-y-6">
+      <div class="remal-card p-6 rounded-3xl space-y-5">
+        <h2 class="text-base font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-3" id="reqHeader">Request Guest Service</h2>
+        <form id="guestRequestForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1 tracking-wide" id="lblRoom">Room Number</label>
+            <input type="text" id="req_room" placeholder="e.g., 104, 201 or 601" onkeyup="onRoomNumberChange()" onchange="onRoomNumberChange()" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50/55 outline-none" required>
+            <p id="roomErrorMsg" class="text-rose-600 text-[11px] font-bold mt-1 hidden">❌ Erreur de numéro : Numéro de chambre ou de villa invalide.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1 tracking-wide" id="lblService">Service Type</label>
+            <select id="req_service" onchange="toggleServiceDynamicFields()" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50/50 outline-none"></select>
+          </div>
+
+          <div id="bookingBlock" class="hidden space-y-3 bg-emerald-50/60 p-4 rounded-2xl border border-emerald-200">
+            <div class="flex items-center space-x-2 text-emerald-900 font-bold text-xs">
+              <span>📅</span><span id="lblBookingTitle">Table / Spa Reservation Details</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-stone-700 mb-1" id="lblVenue">Venue / Service</label>
+                <select id="booking_venue" class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none">
+                  <option value="Falaj Restaurant" id="optFalaj">🍽️ Falaj Restaurant</option>
+                  <option value="Sarab Bar" id="optSarab">🍸 Sarab Bar & Lounge</option>
+                  <option value="The Spa" id="optSpa">💆 The Spa & Wellness</option>
+                  <option value="Al Waha Pool Cabana" id="optCabana">🏖️ Al Waha Cabana</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-stone-700 mb-1" id="lblGuests">Guests Count</label>
+                <select id="booking_guests" class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none">
+                  <option value="1 Person" id="optG1">1 Person</option>
+                  <option value="2 Persons" selected id="optG2">2 Persons</option>
+                  <option value="3 Persons" id="optG3">3 Persons</option>
+                  <option value="4 Persons" id="optG4">4 Persons</option>
+                  <option value="5+ Persons" id="optG5">5+ Persons (Group)</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-stone-700 mb-1" id="lblBDate">Reservation Date</label>
+                <input type="date" id="booking_date" class="w-full border border-stone-200 rounded-xl p-2 text-xs bg-white outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-stone-700 mb-1" id="lblBTime">Preferred Time</label>
+                <input type="time" id="booking_time" class="w-full border border-stone-200 rounded-xl p-2 text-xs bg-white outline-none" value="19:30">
+              </div>
+            </div>
+          </div>
+
+          <div id="wakeupCallBlock" class="hidden space-y-3 bg-blue-50/60 p-4 rounded-2xl border border-blue-200">
+            <div class="flex items-center space-x-2 text-blue-900 font-bold text-xs">
+              <span>⏰</span><span id="lblWakeupTitle">Wake-Up Call Scheduler</span>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-stone-700 mb-1" id="lblWakeupLabel">Select Alarm Time</label>
+              <input type="time" id="wakeup_time" class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none" value="07:00">
+            </div>
+          </div>
+
+          <div id="lateCheckoutBlock" class="hidden space-y-3 bg-amber-50/60 p-4 rounded-2xl border border-amber-200">
+            <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+              <span>⏱️</span><span id="lblLateTitle">Late Check-Out Request</span>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-stone-700 mb-1" id="lblLateLabel">Requested Departure Time</label>
+              <select id="late_checkout_time" class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none">
+                <option value="13:00 PM (1:00 PM)">13:00 PM (1:00 PM)</option>
+                <option value="14:00 PM (2:00 PM)">14:00 PM (2:00 PM)</option>
+                <option value="15:00 PM (3:00 PM)">15:00 PM (3:00 PM)</option>
+                <option value="16:00 PM (4:00 PM)">16:00 PM (4:00 PM - Max)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="roomServiceMenuBlock" class="hidden space-y-4 bg-stone-50 p-4 rounded-2xl border border-stone-200">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+              <span class="text-xs font-bold text-stone-800" id="lblMenuHeader">🍽️ Select Menu Items</span>
+              <span class="text-[10px] bg-remal-sand text-white font-bold px-2 py-0.5 rounded-full" id="lblMenuBadge">In-Room Dining</span>
+            </div>
+            <div id="foodItemsContainer" class="space-y-3 max-h-[500px] overflow-y-auto pr-1"><p class="text-center text-xs text-stone-400">Loading menu...</p></div>
+            <div class="pt-2 border-t border-stone-200 space-y-2">
+              <div class="flex justify-between text-xs font-bold text-stone-900">
+                <span id="lblTotalAmt">Total Amount:</span>
+                <span id="cartTotalDisplay" class="text-remal-sand font-serif-luxury text-sm">AED 0</span>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1" id="lblDelivTime">Preferred Delivery Time</label>
+                <select id="delivery_time" class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none">
+                  <option value="As soon as possible" id="deliv1">⚡ As soon as possible (~30 min)</option>
+                  <option value="In 45 minutes" id="deliv2">🕒 In 45 minutes</option>
+                  <option value="In 1 hour" id="deliv3">🕒 In 1 hour</option>
+                  <option value="Scheduled Breakfast (07:00 AM - 08:00 AM)" id="deliv4">🥐 Scheduled Breakfast (07:00 AM - 08:00 AM)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1 tracking-wide" id="lblDetails">Additional Notes / Request Details</label>
+            <textarea id="req_details" rows="3" placeholder="Specify request details..." class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50/50 outline-none" required></textarea>
+          </div>
+          <button type="button" onclick="submitGuestRequest()" class="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-sm tracking-wider">
+            <span id="btnSubmitReq">Send Request to Reception</span>
+          </button>
+        </form>
+
+        <div id="whatsappConfirmation" class="hidden bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-3">
+          <div class="flex items-center space-x-2 text-emerald-900 font-bold text-xs">
+            <span>✅</span><span id="lblSuccessMsg">Request submitted successfully!</span>
+          </div>
+          <a id="btnWhatsappDirect" href="#" target="_blank" class="flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-4 rounded-xl font-bold text-xs shadow-md transition">
+            <span id="lblChatWhatsapp">💬 Chat on WhatsApp</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="remal-card p-6 rounded-3xl space-y-4">
+        <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+          <h3 class="text-sm font-serif-luxury font-bold text-stone-900" id="lblTrackHeader">📡 Track Active Requests</h3>
+          <span class="text-[10px] bg-stone-100 text-stone-600 font-semibold px-2.5 py-1 rounded-full" id="lblLiveStatus">Live Status</span>
+        </div>
+        <div id="clientTrackerContainer" class="space-y-3"><p class="text-center text-xs text-stone-400 py-3" id="lblTrackEmpty">Enter your room number above to track active requests in real time.</p></div>
+      </div>
+
+      <div class="remal-card p-5 rounded-3xl space-y-3 bg-gradient-to-br from-amber-50/50 to-white">
+        <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+          <span class="text-xs font-serif-luxury font-bold text-stone-900" id="lblFolioTitle">📄 My Room Folio & Charges</span>
+          <button type="button" onclick="generateRoomFolio()" class="bg-stone-900 text-white px-3 py-1.5 rounded-xl font-bold text-[10px] shadow" id="btnPrtFolio">🖨️ Print Folio</button>
+        </div>
+        <div id="clientRoomFolioContainer" class="space-y-2 text-xs">
+          <p class="text-[11px] text-stone-400 italic" id="lblFolioPlaceholder">Enter your room number above to view your live billing summary.</p>
+        </div>
+      </div>
+
+      <div class="remal-card p-5 rounded-3xl space-y-3 bg-gradient-to-br from-emerald-50/40 to-white">
+        <div class="border-b border-stone-100 pb-2">
+          <span class="text-xs font-serif-luxury font-bold text-stone-900" id="lblFeedbackTitle">⭐ Stay Feedback & Experience Rating</span>
+          <p class="text-[10px] text-stone-500" id="lblFeedbackSub">Share your thoughts to help us improve our services</p>
+        </div>
+        <form id="feedbackForm" onsubmit="submitGuestFeedback(event)" class="space-y-3">
+          <div class="flex items-center justify-center space-x-2 py-1">
+            <span class="text-xs font-bold text-stone-700" id="lblRatingText">Rating:</span>
+            <div id="starRatingContainer" class="flex space-x-1 text-xl cursor-pointer">
+              <span onclick="setFeedbackRating(1)" id="star-1" class="text-amber-400">★</span>
+              <span onclick="setFeedbackRating(2)" id="star-2" class="text-amber-400">★</span>
+              <span onclick="setFeedbackRating(3)" id="star-3" class="text-amber-400">★</span>
+              <span onclick="setFeedbackRating(4)" id="star-4" class="text-amber-400">★</span>
+              <span onclick="setFeedbackRating(5)" id="star-5" class="text-amber-400">★</span>
+            </div>
+          </div>
+          <div>
+            <textarea id="feedback_comment" rows="2" placeholder="Tell us about your stay, room cleanliness, or dining experience..." class="w-full border border-stone-200 rounded-xl p-2.5 text-xs bg-white outline-none" required></textarea>
+          </div>
+          <button type="submit" id="btnSubmitReview" class="w-full bg-remal-sand hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">Submit Review</button>
+        </form>
+      </div>
+
+      <div id="guestHistoryBlock" class="remal-card p-5 rounded-3xl space-y-3">
+        <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+          <span class="text-xs font-serif-luxury font-bold text-stone-900" id="lblFavTitle">⭐ My Favorites & Recent Orders</span>
+          <span class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full" id="lblFavBadge">Quick Access</span>
+        </div>
+        <div id="clientFavoritesContainer" class="space-y-2">
+          <p class="text-[11px] text-stone-400 italic" id="lblFavEmpty">No starred favorite dishes yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="whatsappContainer" class="fixed bottom-5 right-5 z-50">
+    <a href="https://wa.me/971526966865?text=Hello%2C%20I%20am%20contacting%20from%20Remal%20Hotel%20Guest%20Hub." target="_blank" class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-full shadow-2xl transition transform hover:scale-105 border border-emerald-500 font-semibold text-xs">
+      <span class="text-lg">💬</span><span id="whatsappText">WhatsApp Reception</span>
+    </a>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://tfxzburpulyvjnvtqlgj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmeHpidXJwdWx5dmpudnRxbGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NzU0ODgsImV4cCI6MjEwMTA1MTQ4OH0.-kcVKnpSHkFitLLyk-ntSHAWPpIa_SpThOIa7FGpbV8';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let roomServiceMenu = [];
+    let cartState = {};
+    let starredItems = JSON.parse(localStorage.getItem('remal_starred') || '{}');
+
+    let currentLang = 'en';
+    let currentCategory = 'All';
+    let cachedOffers = JSON.parse(localStorage.getItem('remal_cache_offers') || '[]');
+    let cachedRequests = [];
+    let activeAnnouncement = null;
+    let currentFeedbackRating = 5;
+
+    const FAQ_DATA = [
+      {
+        q: { en: "What is the Wi-Fi password?", ar: "ما هي كلمة مرور الواي فاي؟", hi: "वाई-फाई पासवर्ड क्या है?" },
+        a: { en: "Wi-Fi is completely free and open across the hotel. Connect to 'Remal_Guest' without any password.", ar: "الواي فاي مجاني ومفتوح في جميع أنحاء الفندق. اتصل بشبكة 'Remal_Guest' بدون كلمة مرور.", hi: "वाई-फाई पूरी तरह से मुफ़्त है। बिना किसी पासवर्ड के 'Remal_Guest' से कनेक्ट करें।" }
+      },
+      {
+        q: { en: "What are the breakfast hours?", ar: "ما هي مواعيد وجبة الإفطار؟", hi: "नाश्ते का समय क्या है?" },
+        a: { en: "Breakfast is served daily at Falaj Restaurant from 06:30 AM to 11:00 AM.", ar: "يُقدم الإفطار يومياً في مطعم الفلج من الساعة 06:30 صباحاً حتى 11:00 مساءً.", hi: "नाश्ता प्रतिदिन फलज रेस्टोरेंट में सुबह 06:30 से सुबह 11:00 बजे तक परोसा जाता है।" }
+      },
+      {
+        q: { en: "How do I request a late check-out?", ar: "كيف يمكنني طلب مغادرة متأخرة؟", hi: "मैं देर से चेक-आउट का अनुरोध कैसे करूं?" },
+        a: { en: "You can request a late check-out up to 16:00 (4:00 PM) directly in the 'Service' tab by selecting 'Late Check-out Request'.", ar: "يمكنك طلب مغادرة متأخرة حتى الساعة 16:00 مساءً مباشرة عبر علامة التبويب 'طلب خدمة'.", hi: "'सेवा' टैब में सीधे 'लेट चेक-आउट अनुरोध' चुनकर दोपहर 04:00 बजे तक अनुरोध कर सकते हैं।" }
+      },
+      {
+        q: { en: "What are the swimming pool timings?", ar: "ما هي مواعيد مسبح الواحة؟", hi: "स्विमिंग पूल का समय क्या है?" },
+        a: { en: "Al Waha Swimming Pool is open daily from 07:00 AM to 08:00 PM.", ar: "مسبح الواحة مفتوح يومياً من الساعة 07:00 صباحاً حتى 08:00 مساءً.", hi: "अल वाहा स्विमिंग पूल प्रतिदिन सुबह 07:00 से रात 08:00 बजे तक खुला रहता है।" }
+      },
+      {
+        q: { en: "How can I order room service?", ar: "كيف يمكنني طلب خدمة الغرف؟", hi: "मैं रूम सर्विस कैसे ऑर्डर कर सकता हूं?" },
+        a: { en: "Go to the 'Service' tab, select 'Room Service / Dining', pick your favorite dishes from our menu, and click send!", ar: "توجه إلى علامة التبويب 'طلب خدمة'، اختر 'خدمة الغرف'، ثم حدد أطباقك المفضلة وأرسل الطلب!", hi: "'सेवा' टैब पर जाएं, 'रूम सर्विस' चुनें, अपने पसंदीदा व्यंजन चुनें और भेजें!" }
+      }
+    ];
+
+    const HARDCODED_MENU = [
+      { id: 'hm_bf1', categoryKey: 'Breakfast', catName: { en: 'Breakfast', ar: 'وجبة الإفطار', hi: 'नाश्ता' }, name: { en: 'Continental', ar: 'كونتيننتال', hi: 'महाद्वीपीय' }, desc: { en: 'Croissant, Muffin, Danish and Seasonal Sliced Fruits', ar: 'تشكيلة من الكرواسون والمفن والدانش، وفواكه موسمية مقطعة', hi: 'क्रॉसेंट, मफिन, दानिश और मौसमी कटे हुए फल' }, price: 49 },
+      { id: 'hm_bf2', categoryKey: 'Breakfast', catName: { en: 'Breakfast', ar: 'وجبة الإفطار', hi: 'नाश्ता' }, name: { en: 'Emirati Flavors', ar: 'الفطور بالطعم الإماراتي', hi: 'अमीराती स्वाद' }, desc: { en: 'Harees, Chebab, Balaleet, Arabic Cheese, Labneh, Olives, Cucumber, Tomatoes, Foul Medames, Egg Shakshuka, Kuboos, and Seasonal Sliced Fruits', ar: 'هريس، جباب، بالاليط، جبن عريج، لبنة، زيتون، خيار، طماطم، فول مدمس، شكشوكة البيض، خبز، وفواكه موسمية مقطعة', hi: 'हरीस, चेबाब, बलालीट, अरबी पनीर, लाबनेह, जैतून, ककड़ी, टमाटर, फुल मेदमेस, अंडा शक्शुका' }, price: 59 },
+      { id: 'hm_bf3', categoryKey: 'Breakfast', catName: { en: 'Breakfast', ar: 'وجبة الإفطار', hi: 'नाश्ता' }, name: { en: 'Arabic Breakfast', ar: 'فطور عربي', hi: 'अरबी नाश्ता' }, desc: { en: 'Hummus, Falafel, Foul Medames, Labneh, Halloumi White Cheese, Fried Egg, Assorted Vegetables, Olives, Mixed Pickles, and Seasonal Fruits', ar: 'حمص، فلافل، فول مدمس، لبنة، جبنة حلومي، بيض مقلي، تشكيلة من الخضروات، زيتون، مخللات مشكلة، وفواكه موسمية', hi: 'हम्मुस, फलाफेल, फुल मेदमेस, लाबनेह, हलोमी सफेद पनीर, तला हुआ अंडा, मिश्रित सब्जियां' }, price: 59 }
+    ];
+
+    const facilitiesData = [
+      { 
+        id: 'exterior', 
+        images: ['Remal_exterior_view1.jpg', 'Remal_exterior_view2.jpg'], 
+        title: { en: 'Hotel Exterior & Grounds', ar: 'المظهر الخارجي والمحيط', hi: 'होटल का बाहरी दृश्य' }, 
+        desc: { en: 'Experience our pristine architecture and welcoming surroundings at Remal Hotel & Villas.', ar: 'استمتع بالتصميم المعماري الفريد والمحيط الهادئ في فندق وڤلل رمال.', hi: 'रेमल होटल एंड विला के शानदार वास्तुशिल्प का अनुभव करें।' }, 
+        timing: { en: '24/7 Welcome', ar: 'ترحيب على مدار الساعة', hi: '24 घंटे स्वागत' } 
+      },
+      { 
+        id: 'pool', 
+        images: ['Pool.jpg'], 
+        title: { en: 'Al Waha Swimming Pool', ar: 'مسبح الواحة', hi: 'अल वाहा स्विमिंग पूल' }, 
+        desc: { en: 'Relax by our outdoor swimming pool with comfortable loungers.', ar: 'استرخِ بجانب المسبح الخارجي الجميل مع المشروبات المنعشة.', hi: 'हमारे बाहरी स्विमिंग पूल के पास आराम करें।' }, 
+        timing: { en: '07:00 AM - 08:00 PM', ar: '٠٧:٠٠ صباحاً - ٠٨:٠٠ مساءً', hi: 'सुबह 07:00 - रात 08:00' } 
+      },
+      { 
+        id: 'restaurant', 
+        images: ['Restaurant-1.jpg', 'Restaurant-2.jpg'], 
+        title: { en: 'Falaj Restaurant & Dining', ar: 'مطعم الفلج والوجبات', hi: 'फलज रेस्टोरेंट और भोजन' }, 
+        desc: { en: 'International buffet breakfast & fine dining options serving delicious global cuisines.', ar: 'بوفيه إفطار عالمي وتجربة طعام فاخرة تقدم أشهى المأكولات العالمية.', hi: 'अंतर्राष्ट्रीय बफ़े नाश्ता और स्वादिष्ट वैश्विक व्यंजन।' }, 
+        timing: { en: '06:30 AM - 11:00 PM', ar: '٠٦:٣٠ صباحاً - ١١:٠٠ مساءً', hi: 'सुबह 06:30 - रात 11:00' } 
+      }
+    ];
+
+    const categoriesTranslations = {
+      en: { 'All': 'All Services', 'Falaj Restaurant': 'Falaj Restaurant', 'Sarab': 'Sarab Bar', 'Al Waha Pool': 'Al Waha Pool', 'The Spa': 'The Spa' },
+      ar: { 'All': 'جميع الخدمات', 'Falaj Restaurant': 'مطعم الفلج', 'Sarab': 'بار سراب', 'Al Waha Pool': 'مسبح الواحة', 'The Spa': 'السبا' },
+      hi: { 'All': 'सभी सेवाएं', 'Falaj Restaurant': 'फलज रेस्टोरेंट', 'Sarab': 'सराब बार', 'Al Waha Pool': 'अल वाहा पूल', 'The Spa': 'द स्पा' }
+    };
+
+    function validateRoomNumber(roomStr) {
+      if (!roomStr) return false;
+      let cleanVal = roomStr.trim();
+      let num = parseInt(cleanVal, 10);
+      if (isNaN(num)) return false;
+
+      if (num >= 103 && num <= 144) return true;
+      if (num >= 201 && num <= 246) return true;
+      if (num >= 301 && num <= 348) return true;
+      if (num >= 401 && num <= 448) return true;
+      if (num >= 501 && num <= 520) return true;
+      if (num >= 601 && num <= 608) return true;
+
+      return false;
+    }
+
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const room = urlParams.get('room');
+
+      if (room && validateRoomNumber(room)) {
+        document.getElementById('roomIndicator').innerText = `Room/Villa: ${room} • Remal Hotel`;
+        document.getElementById('req_room').value = room;
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('booking_date');
+      if (dateInput) dateInput.value = todayStr;
+
+      setLang('en');
+      renderFacilities();
+      renderFaqList();
+
+      roomServiceMenu = [...HARDCODED_MENU];
+      renderRoomServiceMenu();
+      renderClientCards();
+
+      fetchMenuItemsFromCloud();
+      fetchOffersFromCloud();
+      fetchAnnouncementFromCloud();
+      fetchRequestsFromCloud();
+
+      renderClientFavoritesAndHistory();
+      renderRoomFolioWidget();
+      setInterval(fetchRequestsFromCloud, 5000);
+    }
+
+    function setFeedbackRating(rating) {
+      currentFeedbackRating = rating;
+      for (let i = 1; i <= 5; i++) {
+        const star = document.getElementById(`star-${i}`);
+        if (i <= rating) star.className = "text-amber-400";
+        else star.className = "text-stone-300";
+      }
+    }
+
+    async function submitGuestFeedback(event) {
+      event.preventDefault();
+      const room = document.getElementById('req_room')?.value?.trim() || 'General';
+      const comment = document.getElementById('feedback_comment').value;
+
+      await supabaseClient.from('feedback').insert([{ room, rating: currentFeedbackRating, comment }]);
+      alert("Thank you for sharing your feedback with Remal Hotel & Villas!");
+      document.getElementById('feedback_comment').value = '';
+      setFeedbackRating(5);
+    }
+
+    function renderFaqList() {
+      const container = document.getElementById('faqContainer');
+      if (!container) return;
+      container.innerHTML = FAQ_DATA.map(item => `
+        <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-xs space-y-1">
+          <p class="font-bold text-stone-900">❓ ${item.q[currentLang]}</p>
+          <p class="text-stone-600 pl-4 border-l-2 border-remal-sand">${item.a[currentLang]}</p>
+        </div>
+      `).join('');
+    }
+
+    function filterFaq() {
+      const query = document.getElementById('faqSearchInput').value.toLowerCase();
+      const container = document.getElementById('faqContainer');
+      const filtered = FAQ_DATA.filter(item => 
+        item.q[currentLang].toLowerCase().includes(query) || 
+        item.a[currentLang].toLowerCase().includes(query)
+      );
+      container.innerHTML = filtered.map(item => `
+        <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-xs space-y-1">
+          <p class="font-bold text-stone-900">❓ ${item.q[currentLang]}</p>
+          <p class="text-stone-600 pl-4 border-l-2 border-remal-sand">${item.a[currentLang]}</p>
+        </div>
+      `).join('');
+    }
+
+    async function fetchMenuItemsFromCloud() {
+      const { data } = await supabaseClient.from('menu_items').select('*').order('id', { ascending: true });
+      const formattedCloudItems = (data || []).map(item => ({
+        ...item,
+        catName: { en: item.category, ar: item.category, hi: item.category },
+        name: { en: item.name, ar: item.name, hi: item.name },
+        desc: { en: item.desc || '', ar: item.desc || '', hi: item.desc || '' }
+      }));
+      roomServiceMenu = [...HARDCODED_MENU, ...formattedCloudItems];
+      renderRoomServiceMenu();
+    }
+
+    function toggleServiceDynamicFields() {
+      const selectedService = document.getElementById('req_service').value;
+      const roomServiceBlock = document.getElementById('roomServiceMenuBlock');
+      const lateCheckoutBlock = document.getElementById('lateCheckoutBlock');
+      const wakeupCallBlock = document.getElementById('wakeupCallBlock');
+      const bookingBlock = document.getElementById('bookingBlock');
+
+      roomServiceBlock.classList.add('hidden');
+      lateCheckoutBlock.classList.add('hidden');
+      wakeupCallBlock.classList.add('hidden');
+      bookingBlock.classList.add('hidden');
+
+      if (selectedService === 'Room Service / Dining') {
+        roomServiceBlock.classList.remove('hidden');
+      } else if (selectedService === 'Late Check-out Request') {
+        lateCheckoutBlock.classList.remove('hidden');
+      } else if (selectedService === 'Wake-up Call Request') {
+        wakeupCallBlock.classList.remove('hidden');
+      } else if (selectedService === 'Table / Spa Reservation') {
+        bookingBlock.classList.remove('hidden');
+      }
+    }
+
+    function toggleFavorite(itemId) {
+      if (starredItems[itemId]) {
+        delete starredItems[itemId];
+      } else {
+        starredItems[itemId] = true;
+      }
+      localStorage.setItem('remal_starred', JSON.stringify(starredItems));
+      renderRoomServiceMenu();
+      renderClientFavoritesAndHistory();
+    }
+
+    function renderRoomServiceMenu() {
+      const container = document.getElementById('foodItemsContainer');
+      if (!container) return;
+      if (roomServiceMenu.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400 text-center py-2">No menu items currently.</p>`; return; }
+      
+      const grouped = {};
+      roomServiceMenu.forEach(item => {
+        let catDisplay = item.catName ? (item.catName[currentLang] || item.catName.en) : item.category;
+        if (!grouped[catDisplay]) grouped[catDisplay] = [];
+        grouped[catDisplay].push(item);
+      });
+
+      let html = '';
+      for (const [category, items] of Object.entries(grouped)) {
+        html += `<h4 class="text-sm font-bold text-stone-900 border-b-2 border-remal-sand pb-1 mt-4 mb-2 uppercase">${category}</h4>`;
+        html += items.map(item => {
+          let nameText = typeof item.name === 'object' ? (item.name[currentLang] || item.name.en) : item.name;
+          let descText = typeof item.desc === 'object' ? (item.desc[currentLang] || item.desc.en) : item.desc;
+          const isStarred = starredItems[item.id] ? 'text-amber-500 fill-amber-500' : 'text-stone-300';
+
+          return `
+          <div class="flex justify-between items-center bg-white p-3 mb-2 rounded-xl border border-stone-200 text-xs shadow-sm">
+            <div class="flex items-start space-x-2 pr-2" ${currentLang === 'ar' ? 'dir="rtl"' : 'dir="ltr"'}>
+              <button type="button" onclick="toggleFavorite('${item.id}')" class="mt-0.5 text-base focus:outline-none ${isStarred}">★</button>
+              <div class="space-y-1">
+                <p class="font-bold text-stone-900 text-sm leading-tight">${nameText}</p>
+                ${descText ? `<p class="text-[11px] text-stone-500 leading-snug">${descText}</p>` : ''}
+                <p class="text-remal-sand font-bold text-xs">AED ${item.price}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2 bg-stone-100 rounded-lg p-1 shrink-0">
+              <button type="button" onclick="updateCart('${item.id}', -1)" class="w-6 h-6 bg-white rounded font-bold text-stone-700 shadow-sm">-</button>
+              <span id="qty-item-${item.id}" class="font-bold px-1.5 text-stone-900 w-4 text-center">${cartState[item.id] || 0}</span>
+              <button type="button" onclick="updateCart('${item.id}', 1)" class="w-6 h-6 bg-stone-900 text-white rounded font-bold shadow-sm">+</button>
+            </div>
+          </div>
+        `;
+        }).join('');
+      }
+      container.innerHTML = html;
+    }
+
+    function renderClientFavoritesAndHistory() {
+      const container = document.getElementById('clientFavoritesContainer');
+      if (!container) return;
+      
+      const starredIds = Object.keys(starredItems).filter(id => starredItems[id]);
+      const starredDishObjects = roomServiceMenu.filter(item => starredIds.includes(String(item.id)));
+
+      let html = '';
+      if (starredDishObjects.length > 0) {
+        html += `<div class="space-y-1 mb-2"><p class="text-[10px] font-bold text-stone-500 uppercase">My Favorites</p>`;
+        html += starredDishObjects.map(item => {
+          let nameText = typeof item.name === 'object' ? (item.name[currentLang] || item.name.en) : item.name;
+          return `<div class="flex justify-between items-center bg-stone-50 p-2 rounded-xl border border-stone-200 text-xs">
+            <span class="font-bold text-stone-800">${nameText} (AED ${item.price})</span>
+            <button type="button" onclick="updateCart('${item.id}', 1); switchGuestTab('request'); document.getElementById('req_service').value='Room Service / Dining'; toggleServiceDynamicFields();" class="bg-remal-sand text-white px-2.5 py-1 rounded-lg font-bold text-[10px]">Order +1</button>
+          </div>`;
+        }).join('');
+        html += `</div>`;
+      }
+
+      if (!html) {
+        html = `<p class="text-[11px] text-stone-400 italic">No starred favorite dishes yet.</p>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderRoomFolioWidget() {
+      const container = document.getElementById('clientRoomFolioContainer');
+      if (!container) return;
+      const roomNum = document.getElementById('req_room')?.value?.trim();
+
+      if (!roomNum || !validateRoomNumber(roomNum)) {
+        container.innerHTML = `<p class="text-[11px] text-stone-400 italic">Enter your room number above to view your live billing summary.</p>`;
+        return;
+      }
+
+      const roomReqs = cachedRequests.filter(r => String(r.room).trim().toLowerCase() === roomNum.toLowerCase());
+      let totalSpent = 0;
+      let itemsListHtml = '';
+
+      roomReqs.forEach(req => {
+        if (req.details && req.details.includes('AED')) {
+          const match = req.details.match(/AED\s+([0-9]+(?:\.[0-9]+)?)/);
+          if (match) {
+            const amt = parseFloat(match[1]);
+            totalSpent += amt;
+            itemsListHtml += `<div class="flex justify-between py-1 border-b border-stone-100 text-stone-700"><span>[${req.service}] #${req.id}</span><span class="font-bold text-stone-900">AED ${amt}</span></div>`;
+          }
+        }
+      });
+
+      if (itemsListHtml === '') {
+        itemsListHtml = `<p class="text-[11px] text-stone-400 italic">No billable charges recorded yet for room ${roomNum}.</p>`;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-2">
+          <div class="max-h-36 overflow-y-auto pr-1 space-y-1">${itemsListHtml}</div>
+          <div class="flex justify-between items-center pt-2 border-t border-stone-200 font-bold text-stone-900 text-sm">
+            <span>Total Accrued Charges:</span>
+            <span class="text-remal-sand font-serif-luxury">AED ${totalSpent}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function onRoomNumberChange() {
+      const roomInput = document.getElementById('req_room');
+      const roomError = document.getElementById('roomErrorMsg');
+      const val = roomInput.value.trim();
+
+      if (val === '') {
+        roomError.classList.add('hidden');
+        roomInput.classList.remove('border-rose-500');
+      } else if (!validateRoomNumber(val)) {
+        roomError.classList.remove('hidden');
+        roomInput.classList.add('border-rose-500');
+      } else {
+        roomError.classList.add('hidden');
+        roomInput.classList.remove('border-rose-500');
+      }
+
+      renderClientTracker();
+      renderClientFavoritesAndHistory();
+      renderRoomFolioWidget();
+    }
+
+    function updateCart(itemId, change) {
+      if (!cartState[itemId]) cartState[itemId] = 0;
+      cartState[itemId] = Math.max(0, cartState[itemId] + change);
+      const qtyEl = document.getElementById(`qty-item-${itemId}`);
+      if (qtyEl) qtyEl.innerText = cartState[itemId];
+      calculateCartTotal();
+    }
+
+    function calculateCartTotal() {
+      let total = 0;
+      roomServiceMenu.forEach(item => { total += item.price * (cartState[item.id] || 0); });
+      const display = document.getElementById('cartTotalDisplay');
+      if (display) display.innerText = `AED ${total}`;
+      return total;
+    }
+
+    function scrollCarousel(idx, direction) {
+      const carousel = document.getElementById(`carousel-${idx}`);
+      if (carousel) {
+        carousel.scrollBy({ left: direction * carousel.clientWidth, behavior: 'smooth' });
+      }
+    }
+
+    function renderFacilities() {
+      const container = document.getElementById('facilitiesContainer');
+      if (!container) return;
+
+      container.innerHTML = facilitiesData.map((item, idx) => {
+        const titleText = (item.title && item.title[currentLang]) ? item.title[currentLang] : (item.title?.en || '');
+        const descText = (item.desc && item.desc[currentLang]) ? item.desc[currentLang] : (item.desc?.en || '');
+        const timingText = (item.timing && item.timing[currentLang]) ? item.timing[currentLang] : (item.timing?.en || '');
+        const hasMultiple = item.images && item.images.length > 1;
+
+        return `
+        <div class="remal-card rounded-3xl overflow-hidden shadow-sm">
+          <div class="relative group">
+            <div id="carousel-${idx}" class="flex overflow-x-auto snap-x snap-mandatory scrollbar-none h-56 bg-stone-100">
+              ${item.images.map(img => `
+                <div class="min-w-full w-full h-full flex-shrink-0 snap-center relative">
+                  <img src="${img}" class="w-full h-full object-cover" loading="lazy" onerror="this.onerror=null; this.src='logo.png';">
+                </div>
+              `).join('')}
+            </div>
+
+            ${hasMultiple ? `
+              <button type="button" onclick="scrollCarousel('${idx}', -1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs backdrop-blur-sm z-10 shadow">❮</button>
+              <button type="button" onclick="scrollCarousel('${idx}', 1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center text-xs backdrop-blur-sm z-10 shadow">❯</button>
+            ` : ''}
+          </div>
+          
+          <div class="p-5 space-y-2">
+            <h4 class="text-base font-serif-luxury font-bold text-stone-900">${titleText}</h4>
+            <p class="text-xs text-stone-600 leading-relaxed">${descText}</p>
+            <div class="pt-3 border-t border-stone-100 flex justify-between items-center text-[11px] font-semibold text-stone-500">
+              <span>🕒 ${timingText}</span>
+              <button type="button" onclick="switchGuestTab('request')" class="text-remal-sand hover:underline font-bold">Book / Inquiry →</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function fetchAnnouncementFromCloud() {
+      const { data } = await supabaseClient.from('announcements').select('*').order('id', { ascending: false }).limit(1);
+      if (!data || data.length === 0) return;
+      activeAnnouncement = data[0];
+      renderAnnouncement();
+    }
+
+    function renderAnnouncement() {
+      const banner = document.getElementById('announcementBanner');
+      const textEl = document.getElementById('announcementText');
+      if (activeAnnouncement && activeAnnouncement.is_active) {
+        textEl.innerText = `📢 ${activeAnnouncement.message[currentLang]}`;
+        banner.classList.remove('hidden');
+      } else banner.classList.add('hidden');
+    }
+
+    async function fetchOffersFromCloud() {
+      const { data } = await supabaseClient.from('offers').select('*').order('id', { ascending: false });
+      cachedOffers = data || [];
+      localStorage.setItem('remal_cache_offers', JSON.stringify(cachedOffers));
+      renderClientCards();
+    }
+
+    async function fetchRequestsFromCloud() {
+      const { data, error } = await supabaseClient.from('requests').select('*').order('id', { ascending: false });
+      if (error) return;
+      cachedRequests = data || [];
+      renderClientTracker();
+      renderClientFavoritesAndHistory();
+      renderRoomFolioWidget();
+    }
+
+    function renderClientTracker() {
+      const roomNum = document.getElementById('req_room')?.value?.trim();
+      const container = document.getElementById('clientTrackerContainer');
+      if (!container) return;
+
+      if (!roomNum || !validateRoomNumber(roomNum)) { container.innerHTML = `<p class="text-center text-xs text-stone-400 py-3">Enter your room number above to track active requests in real time.</p>`; return; }
+      const myRequests = cachedRequests.filter(r => String(r.room).trim().toLowerCase() === roomNum.toLowerCase());
+      if (myRequests.length === 0) { container.innerHTML = `<p class="text-center text-xs text-stone-400 py-3">No active requests found for room ${roomNum}.</p>`; return; }
+
+      container.innerHTML = myRequests.map(req => {
+        let statusBadgeClass = "bg-amber-100 text-amber-800";
+        let statusText = req.status || 'Pending';
+        let progressWidth = "w-1/3";
+
+        if (req.status === 'In Progress') {
+          statusBadgeClass = "bg-blue-100 text-blue-800";
+          progressWidth = "w-2/3";
+        } else if (req.status === 'Completed') {
+          statusBadgeClass = "bg-emerald-100 text-emerald-800";
+          progressWidth = "w-full";
+        }
+
+        return `
+        <div class="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-2.5">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-stone-900">${req.service}</span>
+            <span class="${statusBadgeClass} text-[10px] font-bold px-2.5 py-1 rounded-full">${statusText}</span>
+          </div>
+          <p class="text-stone-600 bg-white p-2.5 rounded-xl border border-stone-100">${req.details}</p>
+          <div class="space-y-1 pt-1">
+            <div class="flex justify-between text-[10px] text-stone-400 font-semibold">
+              <span>Status Timeline</span>
+              <span>${req.status === 'Completed' ? 'Delivered' : req.status === 'In Progress' ? 'Preparing (~20m)' : 'Received (~30m)'}</span>
+            </div>
+            <div class="w-full bg-stone-200 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-remal-sand h-full transition-all duration-500 ${progressWidth}"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('categoryFilters');
+      const cats = ['All', 'Falaj Restaurant', 'Sarab', 'Al Waha Pool', 'The Spa'];
+      container.innerHTML = cats.map(cat => `<button onclick="filterCategory('${cat}')" class="px-4 py-2 rounded-full whitespace-nowrap text-xs font-semibold ${currentCategory === cat ? 'bg-remal-sand text-white' : 'bg-white text-stone-600 border'}">${categoriesTranslations[currentLang][cat] || cat}</button>`).join('');
+    }
+
+    function renderClientCards() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+      const filtered = currentCategory === 'All' ? cachedOffers : cachedOffers.filter(item => item.category === currentCategory);
+
+      if (filtered.length === 0) { container.innerHTML = `<p class="text-center text-xs text-stone-400 py-8">No offers available in this category.</p>`; return; }
+      filtered.forEach(item => {
+        const titleText = (item.title && item.title[currentLang]) ? item.title[currentLang] : (item.title?.en || item.title || '');
+        const timingText = (item.timing && item.timing[currentLang]) ? item.timing[currentLang] : (item.timing?.en || item.timing || '');
+        container.innerHTML += `
+          <div class="remal-card rounded-3xl overflow-hidden">
+            <img src="${item.image}" class="w-full h-48 object-cover" onerror="this.onerror=null; this.src='logo.png';">
+            <div class="p-5 space-y-3">
+              <h3 class="text-lg font-serif-luxury font-bold text-stone-900">${titleText}</h3>
+              <div class="flex justify-between items-center pt-3 border-t text-xs"><span class="text-stone-500">🕒 ${timingText}</span><span class="text-remal-sand font-bold">${item.price}</span></div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function generateRoomFolio() {
+      const roomNum = document.getElementById('req_room')?.value?.trim();
+      if (!roomNum || !validateRoomNumber(roomNum)) {
+        alert("Please enter a valid Room Number first.");
+        return;
+      }
+
+      const roomReqs = cachedRequests.filter(r => String(r.room).trim().toLowerCase() === roomNum.toLowerCase());
+      let totalSpent = 0;
+      let rowsHtml = '';
+
+      roomReqs.forEach(req => {
+        let amount = 0;
+        if (req.details && req.details.includes('AED')) {
+          const match = req.details.match(/AED\s+([0-9]+(?:\.[0-9]+)?)/);
+          if (match) amount = parseFloat(match[1]);
+        }
+        totalSpent += amount;
+        rowsHtml += `
+          <tr style="border-bottom: 1px solid #EEE;">
+            <td style="padding: 8px; font-size: 11px;">#${req.id}</td>
+            <td style="padding: 8px; font-size: 11px; font-weight: bold;">${req.service}</td>
+            <td style="padding: 8px; font-size: 10px; color: #555; max-width: 200px; white-space: pre-wrap;">${req.details}</td>
+            <td style="padding: 8px; font-size: 11px; text-align: right; font-weight: bold;">AED ${amount}</td>
+          </tr>
+        `;
+      });
+
+      if (rowsHtml === '') {
+        rowsHtml = `<tr><td colspan="4" style="text-align: center; padding: 20px; color: #777; font-style: italic;">No charges recorded for this room yet.</td></tr>`;
+      }
+
+      const printFolio = document.getElementById('printFolioSection');
+      printFolio.classList.remove('hidden');
+
+      printFolio.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2B383; padding-bottom: 12px; margin-bottom: 15px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: bold; font-family: 'Playfair Display', serif; margin: 0; color: #111;">REMAL HOTEL & VILLAS</h1>
+            <p style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 0 0;">Al Dhannah City • Official Room Folio Statement</p>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #444;">
+            <div><strong>Room / Villa:</strong> ${roomNum}</div>
+            <div style="font-size: 10px; color: #666; margin-top: 1px;">Date: ${new Date().toLocaleDateString()}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <h3 style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #444; margin-bottom: 6px;">Stay Charges & Services Breakdown</h3>
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="background: #F4F4F4; border-bottom: 2px solid #DDD;">
+                <th style="padding: 8px; font-size: 10px; text-transform: uppercase;">ID</th>
+                <th style="padding: 8px; font-size: 10px; text-transform: uppercase;">Service</th>
+                <th style="padding: 8px; font-size: 10px; text-transform: uppercase;">Details</th>
+                <th style="padding: 8px; font-size: 10px; text-transform: uppercase; text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="background: #F9F9F9; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #EEE; margin-bottom: 20px;">
+          <div>
+            <span style="font-size: 11px; font-weight: bold; color: #333;">Total Balance Due:</span>
+            <div style="font-size: 9px; color: #666;">All local taxes and service charges included</div>
+          </div>
+          <div style="font-size: 18px; font-weight: bold; font-family: 'Playfair Display', serif; color: #DCA773;">
+            AED ${totalSpent}
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #EEE; padding-top: 12px; margin-top: 20px;">
+          <div style="font-size: 10px; color: #555;">
+            Guest Signature: _______________________
+          </div>
+          <div style="font-size: 10px; color: #888; text-align: right;">
+            Remal Hotel & Villas Management<br>Authorized Billing Document
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => { 
+        window.print(); 
+        printFolio.classList.add('hidden');
+      }, 200);
+    }
+
+    async function submitGuestRequest() {
+      const room = document.getElementById('req_room').value.trim();
+      const service = document.getElementById('req_service').value;
+      let details = document.getElementById('req_details').value;
+
+      if (!room || !validateRoomNumber(room)) {
+        alert("❌ Erreur : Veuillez entrer un numéro de chambre ou de villa valide.");
+        document.getElementById('req_room').focus();
+        return;
+      }
+      
+      if (service === 'Room Service / Dining') {
+        const total = calculateCartTotal();
+        const deliveryTime = document.getElementById('delivery_time').value;
+        let orderSummary = [];
+        roomServiceMenu.forEach(item => { 
+          if (cartState[item.id] > 0) {
+            let itemName = typeof item.name === 'object' ? (item.name[currentLang] || item.name.en) : item.name;
+            orderSummary.push(`${cartState[item.id]}x ${itemName}`);
+          }
+        });
+        details = `🛒 ORDER: ${orderSummary.join(', ')}\n💰 Total: AED ${total}\n🕒 Time: ${deliveryTime}\n📝 Notes: ${details || 'None'}`;
+      } else if (service === 'Late Check-out Request') {
+        const checkoutTime = document.getElementById('late_checkout_time').value;
+        details = `⏱️ REQUESTED CHECK-OUT TIME: ${checkoutTime}\n📝 Notes: ${details || 'No additional comments'}`;
+      } else if (service === 'Wake-up Call Request') {
+        const wakeupTime = document.getElementById('wakeup_time').value;
+        details = `⏰ WAKE-UP ALARM TIME: ${wakeupTime}\n📝 Notes: ${details || 'No additional comments'}`;
+      } else if (service === 'Table / Spa Reservation') {
+        const venue = document.getElementById('booking_venue').value;
+        const guests = document.getElementById('booking_guests').value;
+        const bDate = document.getElementById('booking_date').value;
+        const bTime = document.getElementById('booking_time').value;
+        details = `📅 BOOKING VENUE: ${venue}\n👥 Guests: ${guests}\n📅 Date: ${bDate} at ${bTime}\n📝 Notes: ${details || 'No additional comments'}`;
+      }
+
+      await supabaseClient.from('requests').insert([{ room, service, details, status: 'Pending' }]);
+      const textMessage = encodeURIComponent(`Hello Remal Reception,\nI submitted a request for Room/Villa ${room}.\n\n*Service:* ${service}\n*Details:*\n${details}`);
+      document.getElementById('btnWhatsappDirect').href = `https://wa.me/971526966865?text=${textMessage}`;
+      document.getElementById('whatsappConfirmation').classList.remove('hidden');
+      document.getElementById('req_details').value = '';
+      
+      cartState = {};
+      renderRoomServiceMenu();
+      calculateCartTotal();
+      
+      await fetchRequestsFromCloud();
+    }
+
+    function switchGuestTab(tab) {
+      ['guestOffersSection', 'guestFacilitiesSection', 'guestFaqSection', 'guestRequestSection'].forEach(s => document.getElementById(s).classList.add('hidden'));
+      ['tabOffersBtn', 'tabFacilitiesBtn', 'tabFaqBtn', 'tabRequestBtn'].forEach(b => document.getElementById(b).className = "flex-1 py-2.5 px-3 rounded-xl text-stone-200 hover:text-white whitespace-nowrap");
+
+      if (tab === 'offers') { document.getElementById('guestOffersSection').classList.remove('hidden'); document.getElementById('tabOffersBtn').className = "flex-1 py-2.5 px-3 rounded-xl bg-white text-stone-900 font-bold shadow-md whitespace-nowrap"; }
+      else if (tab === 'facilities') { document.getElementById('guestFacilitiesSection').classList.remove('hidden'); document.getElementById('tabFacilitiesBtn').className = "flex-1 py-2.5 px-3 rounded-xl bg-white text-stone-900 font-bold shadow-md whitespace-nowrap"; }
+      else if (tab === 'faq') { document.getElementById('guestFaqSection').classList.remove('hidden'); document.getElementById('tabFaqBtn').className = "flex-1 py-2.5 px-3 rounded-xl bg-white text-stone-900 font-bold shadow-md whitespace-nowrap"; renderFaqList(); }
+      else if (tab === 'request') { document.getElementById('guestRequestSection').classList.remove('hidden'); document.getElementById('tabRequestBtn').className = "flex-1 py-2.5 px-3 rounded-xl bg-white text-stone-900 font-bold shadow-md whitespace-nowrap"; toggleServiceDynamicFields(); renderClientTracker(); renderClientFavoritesAndHistory(); renderRoomFolioWidget(); }
+    }
+
+    const i18n = {
+      en: {
+        welcome: "Welcome to Remal Hotel & Villas", lblOffers: "Offers", lblFacilities: "Facilities", lblService: "Service", lblFaq: "FAQ",
+        facHeader: "Hotel Facilities & Amenities", facSub: "Explore our premium venues and spaces", reqHeader: "Request Guest Service",
+        lblRoom: "Room Number", lblService: "Service Type", lblDetails: "Additional Notes / Request Details", btnSubmit: "Send Request to Reception",
+        services: [
+          { val: "Table / Spa Reservation", text: "Table / Spa Reservation" },
+          { val: "Wake-up Call Request", text: "Wake-up Call / Alarm Service" },
+          { val: "Late Check-out Request", text: "Late Check-out / Extension" },
+          { val: "Housekeeping", text: "Housekeeping / Room Cleaning" },
+          { val: "Front Desk Inquiry", text: "Front Desk Inquiry" }, 
+          { val: "Luggage Assistance", text: "Luggage Assistance" },
+          { val: "Room Service / Dining", text: "Room Service / Order Food" }, 
+          { val: "Maintenance / Technical Support", text: "Maintenance / Technical Support" },
+          { val: "Laundry", text: "Laundry" }
+        ]
+      },
+      ar: {
+        welcome: "مرحباً بكم في فندق وڤلل رمال", lblOffers: "العروض", lblFacilities: "المرافق والخدمات", lblService: "طلب خدمة", lblFaq: "الأسئلة الشائعة",
+        facHeader: "مرافق الفندق والخدمات", facSub: "استكشف أرقى مرافقنا وخدماتنا المميزة", reqHeader: "طلب خدمة النزلاء",
+        lblRoom: "رقم الغرفة", lblService: "نوع الخدمة", lblDetails: "ملاحظات إضافية / تفاصيل الطلب", btnSubmit: "إرسال الطلب إلى الاستقبال",
+        services: [
+          { val: "Table / Spa Reservation", text: "حجز طاولة مطعم أو موعد سبا" },
+          { val: "Wake-up Call Request", text: "خدمة الإيقاظ / التنبيه الصباحي" },
+          { val: "Late Check-out Request", text: "طلب مغادرة متأخرة / تمديد الإقامة" },
+          { val: "Housekeeping", text: "خدمة الغرف / تنظيف الغرفة" },
+          { val: "Front Desk Inquiry", text: "استفسار الاستقبال" }, 
+          { val: "Luggage Assistance", text: "مساعدة في الأمتعة" },
+          { val: "Room Service / Dining", text: "خدمة الغرف / طلب طعام" }, 
+          { val: "Maintenance / Technical Support", text: "الصيانة / الدعم الفني" },
+          { val: "Laundry", text: "خدمة الغسيل (Laundry)" }
+        ]
+      },
+      hi: {
+        welcome: "रेमल होटल एंड विला में आपका स्वागत है", lblOffers: "विशेष ऑफ़र", lblFacilities: "सुविधाएं", lblService: "सेवा अनुरोध", lblFaq: "सामान्य प्रश्न",
+        facHeader: "होटल सुविधाएं", facSub: "हमारे प्रीमियम स्थानों और सेवाओं का अन्वेषण करें", reqHeader: "अतिथि सेवा का अनुरोध करें",
+        lblRoom: "कमरा संख्या", lblService: "सेवा का प्रकार", lblDetails: "अतिरिक्त विवरण / अनुरोध", btnSubmit: "रिसेप्शन को अनुरोध भेजें",
+        services: [
+          { val: "Table / Spa Reservation", text: "टेबल या स्पा बुकिंग" },
+          { val: "Wake-up Call Request", text: "वेक-अप कॉल / सुबह की अलार्म सेवा" },
+          { val: "Late Check-out Request", text: "देर से चेक-आउट / समय बढ़ाना" },
+          { val: "Housekeeping", text: "हाउसकीपिंग / कमरे की सफाई" },
+          { val: "Front Desk Inquiry", text: "फ्रंट डेस्क पूछताछ" }, 
+          { val: "Luggage Assistance", text: "सामान सहायता" },
+          { val: "Room Service / Dining", text: "रूम सर्विस / खाना ऑर्डर करें" }, 
+          { val: "Maintenance / Technical Support", text: "रखरखाव / तकनीकी सहायता" },
+          { val: "Laundry", text: "लॉन्ड्ररी (कपड़े धोने की सेवा)" }
+        ]
+      }
+    };
+
+    function setLang(lang) {
+      currentLang = lang;
+      const t = i18n[lang];
+
+      ['en', 'ar', 'hi'].forEach(l => {
+        const btn = document.getElementById(`btn-${l}`);
+        if (l === lang) btn.className = "px-2.5 py-1 rounded-full bg-remal-sand text-white shadow-sm";
+        else btn.className = "px-2.5 py-1 rounded-full text-stone-600 hover:text-stone-900";
+      });
+
+      document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      document.getElementById('welcomeMsg').innerText = t.welcome;
+      document.getElementById('lblTabOffers').innerText = t.lblOffers;
+      document.getElementById('lblTabFacilities').innerText = t.lblFacilities;
+      document.getElementById('lblTabFaq').innerText = t.lblFaq;
+      document.getElementById('lblTabRequest').innerText = t.lblService;
+      document.getElementById('reqHeader').innerText = t.reqHeader;
+      document.getElementById('btnSubmitReq').innerText = t.btnSubmit;
+
+      const selectService = document.getElementById('req_service');
+      selectService.innerHTML = t.services.map(s => `<option value="${s.val}">${s.text}</option>`).join('');
+
+      renderCategoryFilters(); 
+      renderClientCards(); 
+      renderFacilities(); 
+      renderFaqList();
+      renderAnnouncement(); 
+      renderClientTracker();
+      renderRoomServiceMenu();
+      renderClientFavoritesAndHistory();
+      renderRoomFolioWidget();
+    }
+
+    function filterCategory(cat) { currentCategory = cat; renderCategoryFilters(); renderClientCards(); }
+    window.onload = init;
+  </script>
+</body>
+</html>
