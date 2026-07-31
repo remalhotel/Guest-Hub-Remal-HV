@@ -1,5 +1,5 @@
 // ==========================================
-// REMAL HOTEL & VILLAS - LAUNDRY MANAGEMENT LOGIC
+// REMAL HOTEL & VILLAS - LAUNDRY MANAGEMENT LOGIC (AVEC BORDEREAU)
 // ==========================================
 import { supabaseClient } from './supabase.js';
 import { LAUNDRY_DATABASE } from './laundry-data.js';
@@ -8,17 +8,12 @@ let currentService = 'laundry';
 let currentCountType = 'hotel';
 let cart = {};
 let currentImageData = null;
+let cachedSlips = [];
+let selectedIdForModal = null;
 
 export function initLaundryModule() {
     renderItems();
-    setupEventListeners();
-}
-
-function setupEventListeners() {
-    const roomInput = document.getElementById('roomNumber');
-    if (roomInput) {
-        roomInput.addEventListener('input', validateRoomNumber);
-    }
+    chargerLiveOrders();
 }
 
 export function selectCountType(type) {
@@ -65,29 +60,17 @@ function renderItems() {
                     <p class="text-[10px] ${currentCountType === 'hotel' ? 'text-emerald-600 font-bold' : 'text-remal-sand font-semibold'}">${priceDisplay}</p>
                 </div>
                 <div class="flex items-center space-x-2 bg-stone-100 p-1 rounded-xl">
-                    <button type="button" data-key="${key}" data-name="${item.name}" data-price="${item.price}" data-delta="-1" class="qty-btn-dec w-6 h-6 bg-white text-stone-800 rounded font-bold shadow-sm">-</button>
+                    <button type="button" onclick="updateQty('${key}', '${item.name}', ${item.price}, -1)" class="w-6 h-6 bg-white text-stone-800 rounded font-bold shadow-sm">-</button>
                     <span class="font-bold px-1 text-stone-900">${qty}</span>
-                    <button type="button" data-key="${key}" data-name="${item.name}" data-price="${item.price}" data-delta="1" class="qty-btn-inc w-6 h-6 bg-stone-900 text-white rounded font-bold shadow-sm">+</button>
+                    <button type="button" onclick="updateQty('${key}', '${item.name}', ${item.price}, 1)" class="w-6 h-6 bg-stone-900 text-white rounded font-bold shadow-sm">+</button>
                 </div>
             `;
             container.appendChild(row);
         });
     }
-
-    // Attacher les gestionnaires d'événements dynamiques
-    document.querySelectorAll('.qty-btn-dec').forEach(b => b.onclick = (e) => updateQtyFromDataset(e.target));
-    document.querySelectorAll('.qty-btn-inc').forEach(b => b.onclick = (e) => updateQtyFromDataset(e.target));
 }
 
-function updateQtyFromDataset(target) {
-    const key = target.getAttribute('data-key');
-    const name = target.getAttribute('data-name');
-    const price = parseFloat(target.getAttribute('data-price'));
-    const delta = parseInt(target.getAttribute('data-delta'), 10);
-    updateQty(key, name, price, delta);
-}
-
-function updateQty(key, name, price, delta) {
+window.updateQty = function(key, name, price, delta) {
     if (!cart[key]) cart[key] = { qty: 0, price: price, name: name, service: currentService };
     cart[key].qty += delta;
     if (cart[key].qty <= 0) delete cart[key];
@@ -105,53 +88,124 @@ function calculateGlobalTotals() {
     const vat = subtotal * 0.05; 
     const grandTotal = subtotal + vat;
     
-    const elCount = document.getElementById('currentBordereauCount');
-    const elSub = document.getElementById('subTotal');
-    const elVat = document.getElementById('vatAmount');
-    const elGrand = document.getElementById('grandTotal');
-
-    if (elCount) elCount.innerText = `${totalClothes} pieces`;
-    if (elSub) elSub.innerText = `${subtotal.toFixed(2)} AED`;
-    if (elVat) elVat.innerText = `${vat.toFixed(2)} AED`;
-    if (elGrand) elGrand.innerText = `${grandTotal.toFixed(2)} AED`;
+    document.getElementById('currentBordereauCount').innerText = `${totalClothes} pieces`;
+    document.getElementById('subTotal').innerText = `${subtotal.toFixed(2)} AED`;
+    document.getElementById('vatAmount').innerText = `${vat.toFixed(2)} AED`;
+    document.getElementById('grandTotal').innerText = `${grandTotal.toFixed(2)} AED`;
 }
 
-function isRoomNumberValid(val) {
-    const room = parseInt(val, 10);
-    if (isNaN(room)) return false;
-    return (
-        (room >= 103 && room <= 144) ||
-        (room >= 201 && room <= 246) ||
-        (room >= 301 && room <= 348) ||
-        (room >= 401 && room <= 448) ||
-        (room >= 501 && room <= 520) ||
-        (room >= 601 && room <= 608)
-    );
+export async function sauvegarderBordereauToCloud() {
+    const roomNum = document.getElementById('roomNumber').value.trim();
+    if (!roomNum) {
+        alert('Veuillez entrer un numéro de chambre.');
+        return;
+    }
+
+    if (Object.keys(cart).length === 0 && !currentImageData) {
+        alert('Veuillez sélectionner au moins un vêtement.');
+        return;
+    }
+
+    let totalClothes = 0; 
+    Object.values(cart).forEach(item => totalClothes += item.qty);
+    let subtotal = 0; 
+    if (currentCountType === 'guest') Object.values(cart).forEach(item => subtotal += item.price * item.qty);
+
+    const selectedOption = document.querySelector('input[name="foldingOption"]:checked')?.value || 'F — Folding';
+    const vat = subtotal * 0.05; 
+    const grandTotal = subtotal + vat;
+
+    const payload = {
+        room: roomNum, 
+        count_type: currentCountType, 
+        options: { service_style: selectedOption }, 
+        items: cart,
+        total_clothes: totalClothes, 
+        subtotal: subtotal, 
+        vat: vat, 
+        total: grandTotal, 
+        photo: currentImageData,
+        status: 'Collected'
+    };
+
+    await supabaseClient.from('laundry_slips').insert([payload]);
+    alert(`Bordereau enregistré pour la chambre ${roomNum} !`);
+    cart = {};
+    document.getElementById('roomNumber').value = '';
+    renderItems();
+    calculateGlobalTotals();
 }
 
-function validateRoomNumber() {
-    const input = document.getElementById('roomNumber');
-    const errorMsg = document.getElementById('roomErrorMsg');
-    const saveBtn = document.getElementById('btnSaveRecord');
-    if (!input) return true;
-    const val = input.value.trim();
-
-    if (val === '') {
-        input.className = "w-full border border-stone-200 rounded-xl p-3 text-sm font-bold bg-stone-50 outline-none transition focus:border-stone-400";
-        if (errorMsg) errorMsg.classList.add('hidden');
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
-        return true;
+export async function chargerLiveOrders() {
+    const container = document.getElementById('liveOrdersList');
+    if (!container) return;
+    const { data } = await supabaseClient.from('laundry_slips').select('*');
+    
+    cachedSlips = data || [];
+    if (cachedSlips.length === 0) {
+        container.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">Aucun bordereau en cours.</p>`;
+        return;
     }
 
-    if (isRoomNumberValid(val)) {
-        input.className = "w-full border-2 border-emerald-500 rounded-xl p-3 text-sm font-bold bg-emerald-50/30 text-stone-900 outline-none transition";
-        if (errorMsg) errorMsg.classList.add('hidden');
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
-        return true;
-    } else {
-        input.className = "w-full border-2 border-rose-500 rounded-xl p-3 text-sm font-bold bg-rose-50/50 text-rose-900 outline-none transition";
-        if (errorMsg) errorMsg.classList.remove('hidden');
-        if (saveBtn) { saveBtn.disabled = true; saveBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
-        return false;
-    }
+    container.innerHTML = '';
+    cachedSlips.forEach(entry => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'p-4 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-3';
+        itemDiv.innerHTML = `
+            <div class="flex justify-between items-center cursor-pointer" onclick="ouvrirModalDetails(${entry.id})">
+                <div>
+                    <span class="font-serif-luxury font-bold text-stone-900 text-sm">Chambre ${entry.room}</span>
+                    <span class="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">${entry.count_type}</span>
+                </div>
+                <div class="text-right font-bold text-remal-sand font-serif-luxury text-sm">
+                    ${entry.total.toFixed(2)} AED
+                </div>
+            </div>
+            <div class="text-[10px] text-stone-500">Total pièces : ${entry.total_clothes} | Statut : ${entry.status || 'Collected'}</div>
+        `;
+        container.appendChild(itemDiv);
+    });
+}
+
+window.ouvrirModalDetails = function(id) {
+    selectedIdForModal = id;
+    const entry = cachedSlips.find(e => e.id === id);
+    if (!entry) return;
+
+    document.getElementById('modalRoomNumDisplay').innerText = entry.room;
+    document.getElementById('modalDate').innerText = `Date: ${new Date(entry.created_at).toLocaleDateString('fr-FR')}`;
+    document.getElementById('modalTypeBadgeInline').innerText = entry.count_type === 'hotel' ? 'Hotel Count (Free)' : 'Guest Count';
+    document.getElementById('modalPackagingStyle').innerText = entry.options?.service_style || 'F — Folding';
+
+    const tbody = document.getElementById('modalTableBody'); 
+    tbody.innerHTML = '';
+    Object.values(entry.items || {}).forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-stone-100";
+        tr.innerHTML = `<td class="py-2 p-2 font-bold">${item.name}</td><td class="text-center p-2">${item.qty}</td><td class="text-right p-2">${(item.qty * item.price).toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('modalClothesCount').innerText = `${entry.total_clothes} pièces`;
+    document.getElementById('modalSubTotal').innerText = `${entry.subtotal.toFixed(2)} AED`;
+    document.getElementById('modalVat').innerText = `${entry.vat.toFixed(2)} AED`;
+    document.getElementById('modalTotal').innerText = `${entry.total.toFixed(2)} AED`;
+
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
+window.fermerModal = function() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
+
+window.genererPDF = function() {
+    const element = document.getElementById('pdfExportArea');
+    const opt = {
+        margin: 8,
+        filename: 'Laundry_Slip.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
 }
