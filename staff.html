@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remal Hotel & Villas - Staff Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAFAFA; color: #222222; }
+    .font-serif-luxury { font-family: 'Playfair Display', serif; }
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    .bg-remal-sand { background-color: #E2B383; }
+    .text-remal-sand { color: #DCA773; }
+    .remal-card { background: #FFFFFF; border: 1px solid #EAEAEA; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); }
+    
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+    .pulse-notification { animation: pulse-red 1.5s infinite; }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #printTicketSection, #printTicketSection * { visibility: visible !important; }
+      #printTicketSection {
+        display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 20px !important; box-sizing: border-box !important; background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <div id="printTicketSection" class="hidden"></div>
+
+  <!-- HEADER STAFF PANEL -->
+  <header class="bg-white sticky top-0 z-50 border-b border-stone-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <h1 class="text-sm font-serif-luxury text-stone-900 font-bold tracking-widest">REMAL</h1>
+        <p class="text-[8px] text-stone-500 uppercase tracking-wider">Staff Management Panel</p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-200">🟢 Connected</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENU PRINCIPAL DU STAFF PANEL -->
+  <div id="adminView" class="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div class="flex justify-between items-center bg-stone-200/80 p-1.5 rounded-2xl text-xs font-bold overflow-x-auto scrollbar-none">
+      <div class="flex space-x-2 w-full md:w-auto">
+        <button onclick="switchAdminTab('offers')" id="admTabOffers" class="px-4 py-2.5 rounded-xl bg-stone-900 text-white whitespace-nowrap">🏷️ Content & Menu</button>
+        <button onclick="switchAdminTab('requests')" id="admTabRequests" class="px-4 py-2.5 rounded-xl text-stone-600 relative whitespace-nowrap">
+          🔔 Requests
+          <span id="requestBadge" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full pulse-notification">0</span>
+        </button>
+        <button onclick="switchAdminTab('feedback')" id="admTabFeedback" class="px-4 py-2.5 rounded-xl text-stone-600 whitespace-nowrap">⭐ Guest Reviews</button>
+        <button onclick="switchAdminTab('analytics')" id="admTabAnalytics" class="px-4 py-2.5 rounded-xl text-stone-600 whitespace-nowrap">📊 Analytics</button>
+        <button onclick="switchAdminTab('banner')" id="admTabBanner" class="px-4 py-2.5 rounded-xl text-stone-600 whitespace-nowrap">📢 Announcement</button>
+      </div>
+    </div>
+
+    <!-- 1. OFFERS & MENU -->
+    <div id="adminOffersPanel" class="space-y-6">
+      <div class="flex space-x-2 border-b border-stone-200 pb-2 text-xs font-bold">
+        <button onclick="switchAdminSubTab('offersList')" id="btnSubOffers" class="px-4 py-2 rounded-xl bg-stone-900 text-white">Promotions & Events</button>
+        <button onclick="switchAdminSubTab('menuList')" id="btnSubMenu" class="px-4 py-2 rounded-xl bg-stone-100 text-stone-700">🍔 Room Service Menu Editor</button>
+      </div>
+
+      <div id="adminOffersSubSection" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4 h-fit">
+          <h2 class="text-base font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-2">New Cloud Offer</h2>
+          <form id="adminForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Category</label>
+              <select id="adm_category" class="w-full border border-stone-200 rounded-xl p-3 bg-stone-50 text-sm outline-none">
+                <option value="Falaj Restaurant">Falaj Restaurant</option>
+                <option value="Sarab">Sarab Bar & Lounge</option>
+                <option value="Al Waha Pool">Al Waha Pool</option>
+                <option value="The Spa">The Spa</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Price / Rate (e.g., AED 75)</label>
+              <input type="text" id="adm_price" placeholder="AED 75" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none" required>
+            </div>
+            <div class="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+              <input type="text" id="adm_title_en" placeholder="Title (English)" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+              <input type="text" id="adm_title_ar" placeholder="العنوان (بالعربية)" dir="rtl" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+              <input type="text" id="adm_title_hi" placeholder="शीर्षक (हिंदी)" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+            </div>
+            <div class="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+              <input type="text" id="adm_timing_en" placeholder="Timings (English)" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+              <input type="text" id="adm_timing_ar" placeholder="الأوقات (بالعربية)" dir="rtl" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+              <input type="text" id="adm_timing_hi" placeholder="समय (हिंदी)" class="w-full border border-stone-200 rounded-lg p-2 text-sm outline-none" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-600 uppercase mb-1">Offer Image</label>
+              <input type="file" id="imageFileInput" accept="image/*" onchange="previewPromoImage(event)" class="w-full text-xs text-stone-500 mb-2" />
+              <img id="promoImagePreview" class="hidden w-full h-32 object-cover rounded-xl mt-2 border border-stone-200" alt="Preview">
+            </div>
+            <button type="button" onclick="saveAdminData()" class="w-full bg-remal-sand text-white font-bold py-3.5 rounded-xl shadow-md transition text-sm">Publish Offer</button>
+          </form>
+        </div>
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+          <h3 class="text-xs font-bold text-stone-500 uppercase tracking-widest border-b border-stone-100 pb-2">Active Offers</h3>
+          <div id="adminListContainer" class="grid grid-cols-1 gap-3"></div>
+        </div>
+      </div>
+
+      <div id="adminMenuSubSection" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4 h-fit">
+          <h2 class="text-base font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-2">Add New Menu Dish</h2>
+          <form id="foodMenuForm" onsubmit="addMenuItem(event)" class="space-y-4">
+            <input type="text" id="food_name_en" placeholder="Item Name (English)" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none" required>
+            <input type="text" id="food_name_ar" placeholder="اسم الوجبة (عربي)" dir="rtl" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none" required>
+            <input type="text" id="food_desc_en" placeholder="Description / Ingredients (English)" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none">
+            <input type="text" id="food_desc_ar" placeholder="المكونات والتفاصيل (عربي)" dir="rtl" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none">
+            <input type="number" id="food_price" placeholder="Price (AED)" class="w-full border border-stone-200 rounded-xl p-3 text-sm bg-stone-50 outline-none" required>
+            <select id="food_category" class="w-full border border-stone-200 rounded-xl p-3 bg-stone-50 text-sm outline-none">
+              <option value="Breakfast">Breakfast | وجبة الإفطار</option>
+              <option value="Soup">Soup | الشوربة</option>
+              <option value="Salads and Mezzeh">Salads and Mezzeh | السلطات والمقبلات</option>
+              <option value="Sandwich and Burger">Sandwich and Burger | الساندويش والبرجر</option>
+              <option value="Pizza">Pizza | البيتزا</option>
+              <option value="Pasta">Pasta | الباستا</option>
+              <option value="Main Course">Main Course | الأطباق الرئيسية</option>
+              <option value="Hot Beverage">Hot Beverage | القهوة/ الشاي</option>
+              <option value="Milkshake">Milkshake | ميلك شيك</option>
+              <option value="Mocktail">Mocktail | الموكتيل</option>
+              <option value="Alcoholic Beverages">Alcoholic Beverages</option>
+            </select>
+            <button type="submit" class="w-full bg-stone-900 text-white font-bold py-3.5 rounded-xl text-sm">➕ Add Dish</button>
+          </form>
+        </div>
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+          <h3 class="text-xs font-bold text-stone-500 uppercase tracking-widest border-b border-stone-100 pb-2">Live Menu Items</h3>
+          <div id="adminMenuListContainer" class="space-y-4 max-h-[600px] overflow-y-auto pr-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. REQUESTS -->
+    <div id="adminRequestsPanel" class="hidden space-y-4">
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+        <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+          <div>
+            <h2 class="text-base font-serif-luxury font-bold text-stone-900">Live Service Requests</h2>
+            <p class="text-[10px] text-stone-500">Real-time room service and guest requests</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="enableAudioAlerts()" id="btnAudioEnable" class="text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 px-3 py-2 rounded-xl font-bold border border-amber-200 shadow-sm transition">
+              🔔 Enable Sound Alerts
+            </button>
+            <button onclick="fetchRequestsFromCloud()" class="text-xs bg-stone-100 text-stone-700 px-3 py-2 rounded-xl font-semibold border border-stone-200">🔄 Refresh</button>
+          </div>
+        </div>
+        <div id="adminRequestsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+
+    <!-- 3. FEEDBACK -->
+    <div id="adminFeedbackPanel" class="hidden space-y-4">
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+        <h2 class="text-base font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-2">Guest Feedback & Ratings</h2>
+        <div id="adminFeedbackContainer" class="space-y-3">
+          <p class="text-xs text-stone-400">Loading reviews...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ANALYTICS -->
+    <div id="adminAnalyticsPanel" class="hidden space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm space-y-1">
+          <p class="text-xs text-stone-500 font-bold uppercase">Total Requests</p>
+          <h3 id="statTotalReq" class="text-2xl font-serif-luxury font-bold text-stone-900">0</h3>
+        </div>
+        <div class="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm space-y-1">
+          <p class="text-xs text-stone-500 font-bold uppercase">Resolution Rate</p>
+          <h3 id="statResolutionRate" class="text-2xl font-serif-luxury font-bold text-emerald-600">0%</h3>
+        </div>
+        <div class="bg-white p-5 rounded-3xl border border-stone-200 shadow-sm space-y-1">
+          <p class="text-xs text-stone-500 font-bold uppercase">Room Service Revenue</p>
+          <h3 id="statRevenue" class="text-2xl font-serif-luxury font-bold text-remal-sand">AED 0</h3>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+        <h3 class="text-sm font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-2">📈 Service Breakdown & Performance</h3>
+        <div id="analyticsContentContainer" class="space-y-3 text-xs text-stone-600">
+          <p class="text-stone-400 italic">Calculating live metrics...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. BANNER -->
+    <div id="adminBannerPanel" class="hidden space-y-4 max-w-2xl mx-auto">
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-stone-200 space-y-4">
+        <h2 class="text-base font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-2">Banner Management</h2>
+        <div class="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-2">
+          <input type="text" id="ann_en" placeholder="Announcement (English)" class="w-full border border-stone-200 rounded-lg p-2.5 text-sm outline-none">
+          <input type="text" id="ann_ar" placeholder="الإعلان (بالعربية)" dir="rtl" class="w-full border border-stone-200 rounded-lg p-2.5 text-sm outline-none">
+          <input type="text" id="ann_hi" placeholder="घोषणा (हिंदी)" class="w-full border border-stone-200 rounded-lg p-2.5 text-sm outline-none">
+        </div>
+        <div class="flex space-x-3">
+          <button onclick="saveAnnouncement(true)" class="flex-1 bg-remal-sand text-white font-bold py-3 rounded-xl text-xs">📢 Publish</button>
+          <button onclick="saveAnnouncement(false)" class="flex-1 bg-stone-100 text-stone-700 font-bold py-3 rounded-xl text-xs">🚫 Hide</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Vos données Supabase exactes intégrées ici
+    const SUPABASE_URL = 'https://tfxzburpulyvjnvtqlgj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmeHpidXJwdWx5dmpudnRxbGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NzU0ODgsImV4cCI6MjEwMTA1MTQ4OH0.-kcVKnpSHkFitLLyk-ntSHAWPpIa_SpThOIa7FGpbV8';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let audioContext = null;
+    let audioEnabled = false;
+    let previousPendingCount = 0;
+    let roomServiceMenu = [];
+    let cachedOffers = [];
+    let cachedRequests = [];
+    let cachedFeedback = [];
+    let currentPromoImageData = null;
+
+    function init() {
+      fetchOffersFromCloud();
+      fetchRequestsFromCloud();
+      fetchFeedbackFromCloud();
+      fetchMenuItemsFromCloud();
+
+      setInterval(fetchRequestsFromCloud, 5000);
+    }
+
+    function enableAudioAlerts() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext.resume().then(() => {
+          audioEnabled = true;
+          playNotificationSound();
+          const btn = document.getElementById('btnAudioEnable');
+          if (btn) {
+            btn.className = "text-xs bg-emerald-100 text-emerald-800 px-3 py-2 rounded-xl font-bold border border-emerald-300 shadow-sm";
+            btn.innerText = "🔊 Sound Alerts Active";
+          }
+        });
+      } catch (e) { console.error("Audio Error:", e); }
+    }
+
+    function playNotificationSound() {
+      if (!audioEnabled || !audioContext) return;
+      try {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioContext.currentTime);
+        osc.frequency.setValueAtTime(880, audioContext.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.5);
+      } catch (e) { console.error(e); }
+    }
+
+    async function fetchOffersFromCloud() {
+      const { data } = await supabaseClient.from('offers').select('*').order('id', { ascending: false });
+      cachedOffers = data || [];
+      renderAdminList();
+    }
+
+    async function fetchMenuItemsFromCloud() {
+      const { data } = await supabaseClient.from('menu_items').select('*').order('id', { ascending: true });
+      roomServiceMenu = data || [];
+      renderAdminMenuList();
+    }
+
+    async function addMenuItem(event) {
+      event.preventDefault();
+      const nameEn = document.getElementById('food_name_en').value;
+      const nameAr = document.getElementById('food_name_ar').value;
+      const descEn = document.getElementById('food_desc_en').value;
+      const descAr = document.getElementById('food_desc_ar').value;
+      const price = parseFloat(document.getElementById('food_price').value);
+      const category = document.getElementById('food_category').value;
+
+      const fullItem = {
+        name: `${nameEn} | ${nameAr}`,
+        desc: `${descEn} | ${descAr}`,
+        price: price,
+        category: category
+      };
+
+      await supabaseClient.from('menu_items').insert([fullItem]);
+      alert('Dish added to database!');
+      document.getElementById('foodMenuForm').reset();
+      await fetchMenuItemsFromCloud();
+    }
+
+    async function deleteMenuItem(id) {
+      if (confirm('Delete dish from database?')) {
+        await supabaseClient.from('menu_items').delete().eq('id', id);
+        await fetchMenuItemsFromCloud();
+      }
+    }
+
+    function renderAdminMenuList() {
+      const container = document.getElementById('adminMenuListContainer');
+      if (!container) return;
+      if (roomServiceMenu.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400">No dishes.</p>`; return; }
+      
+      const grouped = {};
+      roomServiceMenu.forEach(item => {
+        const catKey = item.category || 'General';
+        if (!grouped[catKey]) grouped[catKey] = [];
+        grouped[catKey].push(item);
+      });
+
+      let html = '';
+      for (const [category, items] of Object.entries(grouped)) {
+        html += `<h4 class="text-xs font-bold text-stone-500 uppercase mt-4 mb-2 border-b border-stone-200 pb-1">${category}</h4>`;
+        html += items.map(item => `
+          <div class="flex items-center justify-between p-2 mb-1 bg-stone-50 rounded-xl border border-stone-200 text-xs">
+            <div><p class="font-bold text-stone-800">${item.name}</p><p class="text-[10px] text-stone-500">${item.desc || ''}</p><p class="text-[10px] text-remal-sand font-semibold">AED ${item.price}</p></div>
+            <button onclick="deleteMenuItem(${item.id})" class="text-rose-600 font-bold p-1">🗑️ Delete</button>
+          </div>
+        `).join('');
+      }
+      container.innerHTML = html;
+    }
+
+    async function fetchRequestsFromCloud() {
+      const { data, error } = await supabaseClient.from('requests').select('*').order('id', { ascending: false });
+      if (error) return;
+      cachedRequests = data || [];
+      const pendingRequests = cachedRequests.filter(r => r.status === 'Pending' || !r.status);
+      
+      if (pendingRequests.length > previousPendingCount) {
+        playNotificationSound();
+      }
+      previousPendingCount = pendingRequests.length;
+
+      const badge = document.getElementById('requestBadge');
+      if (pendingRequests.length > 0) { badge.innerText = pendingRequests.length; badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+
+      renderAdminRequests();
+      renderAnalyticsData();
+    }
+
+    function renderAnalyticsData() {
+      const totalReq = cachedRequests.length;
+      const completedReq = cachedRequests.filter(r => r.status === 'Completed').length;
+      const resolutionRate = totalReq > 0 ? Math.round((completedReq / totalReq) * 100) : 0;
+
+      let totalRevenue = 0;
+      const serviceCounts = {};
+
+      cachedRequests.forEach(req => {
+        const s = req.service || 'Other';
+        serviceCounts[s] = (serviceCounts[s] || 0) + 1;
+
+        if (req.details && req.details.includes('AED')) {
+          const match = req.details.match(/AED\s+([0-9]+(?:\.[0-9]+)?)/);
+          if (match) totalRevenue += parseFloat(match[1]);
+        }
+      });
+
+      document.getElementById('statTotalReq').innerText = totalReq;
+      document.getElementById('statResolutionRate').innerText = `${resolutionRate}%`;
+      document.getElementById('statRevenue').innerText = `AED ${totalRevenue}`;
+
+      let analyticsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+      
+      analyticsHtml += `<div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-2">`;
+      analyticsHtml += `<p class="font-bold text-stone-800 uppercase text-[11px]">Requests by Department</p>`;
+      for (const [srv, count] of Object.entries(serviceCounts)) {
+        analyticsHtml += `<div class="flex justify-between items-center text-xs border-b border-stone-100 pb-1"><span>${srv}</span><span class="font-bold bg-white px-2 py-0.5 rounded border">${count}</span></div>`;
+      }
+      analyticsHtml += `</div>`;
+
+      const pendingCount = cachedRequests.filter(r => r.status === 'Pending' || !r.status).length;
+      const progressCount = cachedRequests.filter(r => r.status === 'In Progress').length;
+      
+      analyticsHtml += `<div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-2">`;
+      analyticsHtml += `<p class="font-bold text-stone-800 uppercase text-[11px]">Current Pipeline Status</p>`;
+      analyticsHtml += `<div class="flex justify-between items-center text-xs border-b border-stone-100 pb-1"><span>Pending Requests</span><span class="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${pendingCount}</span></div>`;
+      analyticsHtml += `<div class="flex justify-between items-center text-xs border-b border-stone-100 pb-1"><span>In Progress</span><span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${progressCount}</span></div>`;
+      analyticsHtml += `<div class="flex justify-between items-center text-xs border-b border-stone-100 pb-1"><span>Completed</span><span class="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">${completedCount}</span></div>`;
+      analyticsHtml += `</div>`;
+
+      analyticsHtml += `</div>`;
+      document.getElementById('analyticsContentContainer').innerHTML = analyticsHtml;
+    }
+
+    function renderAdminList() {
+      const container = document.getElementById('adminListContainer');
+      if (!container) return;
+      if (cachedOffers.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400">No active offers.</p>`; return; }
+      container.innerHTML = cachedOffers.map(item => `
+        <div class="flex items-center justify-between p-3 bg-stone-50 rounded-2xl border text-xs">
+          <div class="flex items-center space-x-3"><img src="${item.image}" class="w-12 h-12 object-cover rounded-xl" onerror="this.onerror=null; this.src='logo.png';"><div><p class="font-bold">${item.title.en}</p><p class="text-remal-sand">${item.category} • ${item.price}</p></div></div>
+          <button onclick="deleteOffer(${item.id})" class="text-rose-600 font-bold p-2">🗑️</button>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminRequests() {
+      const container = document.getElementById('adminRequestsContainer');
+      if (!container) return;
+      if (cachedRequests.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400 text-center py-4 col-span-2">No active requests.</p>`; return; }
+      container.innerHTML = cachedRequests.map(req => `
+        <div class="p-4 bg-stone-50 rounded-2xl border text-xs space-y-3 flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex justify-between items-start"><div><span class="font-bold text-stone-900 text-sm">Room: ${req.room || 'N/A'}</span><p class="text-remal-sand font-semibold">${req.service}</p></div><span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${req.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${req.status || 'Pending'}</span></div>
+            <p class="text-stone-700 bg-white p-3 rounded-xl border">${req.details}</p>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t text-[11px]">
+            <div class="space-x-1"><button onclick="updateRequestStatus(${req.id}, 'Pending')" class="px-2 py-1 bg-amber-100 text-amber-800 rounded font-semibold">Pending</button><button onclick="updateRequestStatus(${req.id}, 'In Progress')" class="px-2 py-1 bg-blue-100 text-blue-800 rounded font-semibold">In Progress</button><button onclick="updateRequestStatus(${req.id}, 'Completed')" class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded font-semibold">Completed</button></div>
+            <div class="flex items-center space-x-2">
+              <button onclick="printRequestTicket(${req.id})" class="bg-stone-900 text-white px-2.5 py-1 rounded font-bold">Print Ticket</button>
+              <button onclick="deleteRequest(${req.id})" class="text-rose-600 font-bold p-1">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function printRequestTicket(reqId) {
+      const req = cachedRequests.find(r => r.id === reqId);
+      if (!req) return;
+
+      let statusBg = '#E2B383';
+      if (req.status === 'In Progress') statusBg = '#2563EB';
+      if (req.status === 'Completed') statusBg = '#059669';
+
+      const printTicket = document.getElementById('printTicketSection');
+      printTicket.classList.remove('hidden');
+
+      printTicket.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E2B383; padding-bottom: 12px; margin-bottom: 15px;">
+          <div>
+            <h1 style="font-size: 20px; font-weight: bold; font-family: 'Playfair Display', serif; margin: 0; color: #111;">REMAL HOTEL & VILLAS</h1>
+            <p style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 0 0;">Staff Service Ticket</p>
+          </div>
+          <div style="text-align: right; font-size: 11px; color: #444;">
+            <div><strong>Ticket ID:</strong> #${req.id}</div>
+            <div style="font-size: 10px; color: #666; margin-top: 1px;">${new Date().toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F9F9F9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #EEE;">
+          <div>
+            <span style="font-size: 10px; color: #777; text-transform: uppercase; font-weight: bold;">Room / Villa</span>
+            <div style="font-size: 15px; font-weight: bold; color: #111; margin-top: 2px;">${req.room || 'N/A'}</div>
+          </div>
+          <div>
+            <span style="font-size: 10px; color: #777; text-transform: uppercase; font-weight: bold;">Service Type</span>
+            <div style="font-size: 15px; font-weight: bold; color: #DCA773; margin-top: 2px;">${req.service || 'General Service'}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #444; margin-bottom: 6px;">Request Details / Order Summary</h3>
+          <div style="background: #FFF; border: 1px solid #DDD; padding: 12px; border-radius: 8px; font-size: 13px; white-space: pre-wrap; line-height: 1.5; color: #222; min-height: 80px;">${req.details || 'No additional details provided.'}</div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #EEE; padding-top: 12px; margin-top: 20px;">
+          <div>
+            <span style="font-size: 10px; color: #777; text-transform: uppercase; font-weight: bold;">Current Status:</span>
+            <span style="display: inline-block; margin-left: 6px; padding: 3px 10px; background: ${statusBg}; color: #FFF; font-weight: bold; font-size: 11px; border-radius: 20px;">${req.status || 'Pending'}</span>
+          </div>
+          <div style="font-size: 10px; color: #888; text-align: right;">
+            Authorized Staff Document<br>Remal Hotel Operations
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => { 
+        window.print(); 
+        printTicket.classList.add('hidden');
+      }, 200);
+    }
+
+    function previewPromoImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          currentPromoImageData = e.target.result;
+          const img = document.getElementById('promoImagePreview');
+          img.src = currentPromoImageData;
+          img.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function saveAdminData() {
+      if (!currentPromoImageData) { 
+        alert("Please select an image."); 
+        return; 
+      }
+      const newItem = { 
+        category: document.getElementById('adm_category').value, 
+        price: document.getElementById('adm_price').value, 
+        image: currentPromoImageData, 
+        title: { 
+          en: document.getElementById('adm_title_en').value, 
+          ar: document.getElementById('adm_title_ar').value, 
+          hi: document.getElementById('adm_title_hi').value 
+        }, 
+        timing: { 
+          en: document.getElementById('adm_timing_en').value, 
+          ar: document.getElementById('adm_timing_ar').value, 
+          hi: document.getElementById('adm_timing_hi').value 
+        } 
+      };
+      await supabaseClient.from('offers').insert([newItem]);
+      alert('Offer published!');
+      document.getElementById('adminForm').reset();
+      currentPromoImageData = null;
+      document.getElementById('promoImagePreview').classList.add('hidden');
+      await fetchOffersFromCloud();
+    }
+
+    async function fetchFeedbackFromCloud() {
+      const { data } = await supabaseClient.from('feedback').select('*').order('id', { ascending: false });
+      cachedFeedback = data || [];
+      renderAdminFeedback();
+    }
+
+    function renderAdminFeedback() {
+      const container = document.getElementById('adminFeedbackContainer');
+      if (!container) return;
+      if (cachedFeedback.length === 0) {
+        container.innerHTML = `<p class="text-xs text-stone-400">No guest reviews submitted yet.</p>`;
+        return;
+      }
+      container.innerHTML = cachedFeedback.map(fb => `
+        <div class="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-1">
+          <div class="flex justify-between font-bold text-stone-900">
+            <span>Room/Villa: ${fb.room}</span>
+            <span class="text-amber-500">${'★'.repeat(fb.rating)}${'☆'.repeat(5 - fb.rating)}</span>
+          </div>
+          <p class="text-stone-700">${fb.comment}</p>
+        </div>
+      `).join('');
+    }
+
+    async function saveAnnouncement(isActive) {
+      const newAnn = { message: { en: document.getElementById('ann_en').value, ar: document.getElementById('ann_ar').value, hi: document.getElementById('ann_hi').value }, is_active: isActive };
+      await supabaseClient.from('announcements').insert([newAnn]);
+      alert("Announcement updated!");
+    }
+
+    async function updateRequestStatus(id, newStatus) { await supabaseClient.from('requests').update({ status: newStatus }).eq('id', id); await fetchRequestsFromCloud(); }
+    async function deleteRequest(id) { if (confirm('Delete?')) { await supabaseClient.from('requests').delete().eq('id', id); await fetchRequestsFromCloud(); } }
+    async function deleteOffer(id) { if (confirm('Delete?')) { await supabaseClient.from('offers').delete().eq('id', id); await fetchOffersFromCloud(); } }
+
+    function switchAdminTab(tab) {
+      ['adminOffersPanel', 'adminRequestsPanel', 'adminFeedbackPanel', 'adminAnalyticsPanel', 'adminBannerPanel'].forEach(p => {
+        const el = document.getElementById(p);
+        if (el) el.classList.add('hidden');
+      });
+      if (tab === 'offers') document.getElementById('adminOffersPanel').classList.remove('hidden');
+      else if (tab === 'requests') { document.getElementById('adminRequestsPanel').classList.remove('hidden'); fetchRequestsFromCloud(); }
+      else if (tab === 'feedback') { document.getElementById('adminFeedbackPanel').classList.remove('hidden'); fetchFeedbackFromCloud(); }
+      else if (tab === 'analytics') { document.getElementById('adminAnalyticsPanel').classList.remove('hidden'); renderAnalyticsData(); }
+      else if (tab === 'banner') document.getElementById('adminBannerPanel').classList.remove('hidden');
+    }
+
+    function switchAdminSubTab(subTab) {
+      if (subTab === 'offersList') { document.getElementById('adminOffersSubSection').classList.remove('hidden'); document.getElementById('adminMenuSubSection').classList.add('hidden'); }
+      else { document.getElementById('adminMenuSubSection').classList.remove('hidden'); document.getElementById('adminOffersSubSection').classList.add('hidden'); renderAdminMenuList(); }
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
