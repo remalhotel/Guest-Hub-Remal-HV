@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remal Hotel & Villas - Laundry Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAFAFA; color: #222222; }
+        .font-serif-luxury { font-family: 'Playfair Display', serif; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .bg-remal-sand { background-color: #E2B383; }
+        .text-remal-sand { color: #DCA773; }
+        .remal-card { background: #FFFFFF; border: 1px solid #EAEAEA; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); }
+        
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+        .pulse-notification { animation: pulse-red 1s infinite; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <!-- AUDIO ALARME CLASSIQUE HÔTEL -->
+    <audio id="hotelAlarmSound" loop preload="auto">
+        <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
+    </audio>
+
+    <!-- HEADER LAUNDRY -->
+    <header class="bg-white sticky top-0 z-50 border-b border-stone-200 shadow-sm">
+        <div class="max-w-3xl mx-auto px-5 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div>
+                    <h1 class="text-sm font-serif-luxury text-stone-900 font-bold tracking-widest">REMAL HOTEL</h1>
+                    <p class="text-[8px] text-stone-500 uppercase tracking-wider">Laundry Department</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <div class="flex bg-stone-100 p-1 rounded-full border border-stone-200 text-[11px] font-semibold">
+                    <button onclick="setLang('en')" id="btn-lang-en" class="px-2.5 py-1 rounded-full bg-remal-sand text-white shadow-sm">EN</button>
+                    <button onclick="setLang('ar')" id="btn-lang-ar" class="px-2.5 py-1 rounded-full text-stone-600 hover:text-stone-900">العربية</button>
+                </div>
+                <span class="text-xs font-bold bg-rose-600 text-white px-3 py-1.5 rounded-full shadow">👕 Laundry Hub</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNIÈRE ROUGE D'ALERTE -->
+    <div id="laundryPlantAlert" class="hidden bg-rose-600 text-white px-4 py-3 text-center text-xs font-bold tracking-wide shadow-md pulse-notification flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 text-left">
+            <span>🚨</span>
+            <div>
+                <p id="alertTitleText" class="font-bold">New Laundry Request Received!</p>
+                <p id="alertClientNote" class="text-[11px] font-normal italic opacity-95 text-amber-100 mt-0.5"></p>
+            </div>
+        </div>
+        <button onclick="stopAlarmAndTransfer()" class="bg-white text-rose-700 hover:bg-rose-50 px-3.5 py-2 rounded-xl font-bold text-xs shadow-lg transition whitespace-nowrap cursor-pointer">🔕 Stop Alarm</button>
+    </div>
+
+    <div class="max-w-2xl mx-auto px-4 py-4 space-y-4">
+
+        <!-- 4 SECTIONS DE NAVIGATION -->
+        <div class="grid grid-cols-4 gap-1.5 pt-1 text-[11px] font-bold">
+            <button onclick="switchMainSection('newRecord')" id="navBtnNewRecord" class="py-2.5 px-1 rounded-2xl bg-remal-sand text-white shadow-md transition flex flex-col items-center justify-center gap-0.5">
+                <span>➕</span> <span id="txtBtnNewRecord">New</span>
+            </button>
+            <button onclick="switchMainSection('liveRecord')" id="navBtnLiveRecord" class="py-2.5 px-1 rounded-2xl bg-stone-100 border border-stone-200 text-stone-700 transition flex flex-col items-center justify-center gap-0.5">
+                <span>🔴</span> <span id="txtBtnLiveRecord">Live</span>
+            </button>
+            <button onclick="switchMainSection('pdfList')" id="navBtnPdfList" class="py-2.5 px-1 rounded-2xl bg-stone-100 border border-stone-200 text-stone-700 transition flex flex-col items-center justify-center gap-0.5">
+                <span>📋</span> <span id="txtBtnPdfList">PDF</span>
+            </button>
+            <button onclick="switchMainSection('dashboard')" id="navBtnDashboard" class="py-2.5 px-1 rounded-2xl bg-stone-100 border border-stone-200 text-stone-700 transition flex flex-col items-center justify-center gap-0.5">
+                <span>📈</span> <span id="txtBtnDashboard">Chart</span>
+            </button>
+        </div>
+
+        <!-- SECTION 1: FORMULAIRE NEW RECORD -->
+        <div id="sectionNewRecord" class="space-y-4">
+            <div class="remal-card p-6 rounded-3xl space-y-5">
+                <h2 class="text-lg font-serif-luxury font-bold text-stone-900 border-b border-stone-100 pb-3" id="lblFormTitle">New Laundry Slip</h2>
+
+                <input type="hidden" id="editingRecordId" value="">
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1" id="lblRoomNum">Room Number</label>
+                    <input type="number" id="roomNumber" oninput="validateRoomNumber()" placeholder="e.g., 104, 223, 305..." class="w-full border border-stone-200 rounded-xl p-3 text-sm font-bold bg-stone-50 outline-none">
+                    <p id="roomErrorMsg" class="hidden text-rose-600 text-xs font-bold mt-1.5">⚠️ <span id="lblRoomError">Invalid room number! Allowed ranges: 103-144, 201-246, 301-348, 401-448, 501-520, 601-608.</span></p>
+                </div>
+
+                <div class="flex bg-stone-100 p-1.5 rounded-2xl border border-stone-200 text-xs font-bold gap-2">
+                    <button onclick="selectCountType('hotel')" id="btn-count-hotel" class="flex-1 py-2.5 rounded-xl bg-remal-sand text-white shadow-md">🏨 Hotel Count (Free)</button>
+                    <button onclick="selectCountType('guest')" id="btn-count-guest" class="flex-1 py-2.5 rounded-xl text-stone-600">💳 Guest Count</button>
+                </div>
+
+                <div class="flex gap-2 text-xs font-bold">
+                    <button onclick="switchService('laundry')" id="tab-service-laundry" class="flex-1 py-2.5 rounded-xl bg-stone-900 text-white shadow-sm">LAUNDRY</button>
+                    <button onclick="switchService('dry')" id="tab-service-dry" class="flex-1 py-2.5 rounded-xl bg-stone-100 text-stone-700">DRY CLEANING</button>
+                    <button onclick="switchService('pressing')" id="tab-service-pressing" class="flex-1 py-2.5 rounded-xl bg-stone-100 text-stone-700">PRESSING</button>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 p-2 bg-stone-50 rounded-2xl border border-stone-200 text-xs font-bold text-center">
+                    <label class="flex items-center justify-center gap-1.5 p-2.5 bg-white rounded-xl border border-stone-200 cursor-pointer">
+                        <input type="radio" name="foldingOption" value="F — Folding" checked class="accent-stone-900"> F — Folding
+                    </label>
+                    <label class="flex items-center justify-center gap-1.5 p-2.5 bg-white rounded-xl border border-stone-200 cursor-pointer">
+                        <input type="radio" name="foldingOption" value="H/F — Hanger/Folding" class="accent-stone-900"> H/F — Hanger
+                    </label>
+                    <label class="flex items-center justify-center gap-1.5 p-2.5 bg-white rounded-xl border border-stone-200 cursor-pointer">
+                        <input type="radio" name="foldingOption" value="S — Single" class="accent-stone-900"> S — Single
+                    </label>
+                </div>
+
+                <div id="itemsContainer" class="space-y-3 max-h-80 overflow-y-auto pr-1 scrollbar-none"></div>
+
+                <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-2xl flex justify-between items-center font-bold text-xs">
+                    <span id="lblSelectedGarments">Total Garments:</span>
+                    <span id="currentBordereauCount" class="bg-remal-sand text-white px-3 py-1 rounded-full text-xs">0 pieces</span>
+                </div>
+
+                <div class="bg-stone-50 border border-stone-200 p-4 rounded-2xl text-xs space-y-1.5 font-medium text-stone-800">
+                    <div class="flex justify-between"><span id="lblSubTotal">Subtotal:</span><span id="subTotal">0.00 AED</span></div>
+                    <div class="flex justify-between"><span id="lblVat">VAT (5%):</span><span id="vatAmount">0.00 AED</span></div>
+                    <div class="flex justify-between font-bold text-sm text-stone-900 border-t border-stone-200 pt-2 mt-1"><span id="lblGrandTotal">Grand Total:</span><span id="grandTotal" class="text-remal-sand font-serif-luxury text-base">0.00 AED</span></div>
+                </div>
+
+                <button onclick="document.getElementById('photoInput').click()" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold p-3.5 rounded-xl text-xs border border-dashed border-stone-300 transition" id="btnPhotoProof">📷 Proof Photo (Optional)</button>
+                <input type="file" id="photoInput" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event)">
+                <img id="imagePreview" class="hidden w-full max-h-48 object-cover rounded-2xl mt-2 border border-stone-200" alt="Preuve">
+
+                <button onclick="sauvegarderBordereauToCloud()" id="btnSaveRecord" class="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg transition">💾 Save Record</button>
+            </div>
+        </div>
+
+        <!-- SECTION 2: LIVE ORDERS -->
+        <div id="sectionLiveRecord" class="hidden space-y-4">
+            <div class="remal-card p-6 rounded-3xl space-y-4">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                    <h3 class="text-sm font-serif-luxury font-bold text-stone-900">🔴 Live Laundry Orders</h3>
+                    <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full">Active Workflow</span>
+                </div>
+                <div id="liveOrdersList" class="space-y-3 pt-2"><p class="text-xs text-stone-400 text-center py-4">Loading live orders...</p></div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: PDF LIST & ARCHIVES -->
+        <div id="sectionPdfList" class="hidden space-y-4">
+            <div class="remal-card p-6 rounded-3xl space-y-4">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                    <h3 class="text-sm font-serif-luxury font-bold text-stone-900" id="lblArchiveTitle">PDF List & Records</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-stone-50 p-3 rounded-2xl border border-stone-200">
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Search Room</label>
+                        <input type="text" id="searchRoom" onkeyup="filtrerListeCloud()" placeholder="Room number..." class="w-full border border-stone-200 rounded-xl p-2 text-xs bg-white outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-500 uppercase mb-1">Search Date</label>
+                        <input type="date" id="searchDate" onchange="filtrerListeCloud()" class="w-full border border-stone-200 rounded-xl p-2 text-xs bg-white outline-none">
+                    </div>
+                </div>
+
+                <div id="laundryList" class="space-y-3 pt-2"><p class="text-xs text-stone-400 text-center py-4">Loading records...</p></div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: MANAGEMENT BUSINESS CHART -->
+        <div id="sectionDashboard" class="hidden space-y-4">
+            <div class="remal-card p-6 rounded-3xl space-y-5">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-3">
+                    <h3 class="text-sm font-serif-luxury font-bold text-stone-900">📈 Laundry Analytics</h3>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-center">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase">Total Revenue</p>
+                        <p id="kpiRevenue" class="text-base font-serif-luxury font-bold text-remal-sand mt-0.5">0.00 AED</p>
+                    </div>
+                    <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-center">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase">Total Orders</p>
+                        <p id="kpiOrders" class="text-base font-serif-luxury font-bold text-stone-900 mt-0.5">0</p>
+                    </div>
+                    <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-center col-span-2 sm:col-span-1">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase">Garments</p>
+                        <p id="kpiGarments" class="text-base font-serif-luxury font-bold text-stone-900 mt-0.5">0 pcs</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-2">
+                        <p class="text-xs font-bold text-stone-700 text-center">Status Distribution</p>
+                        <div class="relative h-48 flex items-center justify-center"><canvas id="statusDoughnutChart"></canvas></div>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-2">
+                        <p class="text-xs font-bold text-stone-700 text-center">Revenue by Date</p>
+                        <div class="relative h-48 flex items-center justify-center"><canvas id="revenueBarChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL REÇU / BORDEREAU FLOTTANT -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border border-stone-100 relative">
+            
+            <div id="pdfExportArea" class="p-2 space-y-4">
+                <div class="text-center border-b border-stone-100 pb-3 relative">
+                    <button onclick="fermerModal()" class="absolute right-0 top-0 text-stone-400 text-xl font-bold hover:text-stone-700">✕</button>
+                    <h2 class="text-lg font-serif-luxury font-bold text-stone-900 tracking-wider">REMAL HOTEL</h2>
+                    <p class="text-[9px] text-stone-500 uppercase tracking-widest">Al Ruwais City, Abu Dhabi – UAE</p>
+                    <p class="text-xs font-bold text-remal-sand mt-1 uppercase tracking-wide">LAUNDRY SERVICE SLIP</p>
+                </div>
+
+                <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-stone-500 font-semibold">Room:</span>
+                        <span id="modalRoomNumDisplay" class="text-xl font-serif-luxury font-bold text-stone-900 ml-1">---</span>
+                    </div>
+                    <div class="text-right">
+                        <p id="modalDate" class="text-[10px] text-stone-500 font-bold"></p>
+                        <span id="modalTypeBadgeInline" class="text-[9px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">Hotel Count</span>
+                    </div>
+                </div>
+
+                <div class="bg-stone-50 p-3 rounded-2xl border border-stone-200 text-xs font-bold text-stone-800 flex justify-between">
+                    <span>Packaging:</span>
+                    <span id="modalPackagingStyle" class="text-remal-sand">F — Folding</span>
+                </div>
+
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                        <tr class="bg-remal-sand text-white font-bold text-[11px]">
+                            <th class="p-2.5 rounded-l-xl">Item</th>
+                            <th class="p-2.5 text-center">Qty</th>
+                            <th class="p-2.5 text-right rounded-r-xl">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody" class="divide-y divide-stone-100"></tbody>
+                </table>
+
+                <div class="bg-stone-50 p-3.5 rounded-2xl text-xs space-y-1.5 font-medium text-stone-800 border border-stone-200">
+                    <div class="flex justify-between font-bold text-stone-900 border-b border-stone-200 pb-1.5"><span>Total Garments:</span><span id="modalClothesCount">0 pcs</span></div>
+                    <div class="flex justify-between"><span>Subtotal:</span><span id="modalSubTotal">0.00 AED</span></div>
+                    <div class="flex justify-between"><span>VAT (5%):</span><span id="modalVat">0.00 AED</span></div>
+                    <div class="flex justify-between font-bold text-sm text-stone-900 border-t border-stone-200 pt-2 mt-1"><span>Grand Total:</span><span id="modalTotal" class="text-remal-sand font-serif-luxury text-base">0.00 AED</span></div>
+                </div>
+
+                <div id="modalPhotoContainer"></div>
+            </div>
+
+            <div class="space-y-2 pt-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="genererPDF()" class="bg-remal-sand hover:bg-amber-600 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">📥 Download PDF</button>
+                    <a id="btnWhatsappShare" href="#" target="_blank" class="bg-stone-800 hover:bg-stone-900 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">💬 WhatsApp</a>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="editerBordereauActuel()" class="bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold py-3 rounded-xl text-xs border border-stone-300 flex items-center justify-center gap-1">✏️ Edit</button>
+                    <button onclick="supprimerBordereauActuel()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center gap-1">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT COMPLET AUTONOME LAUNDRY -->
+    <script>
+        const SUPABASE_URL = 'https://tfxzburpulyvjnvtqlgj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmeHpidXJwdWx5dmpudnRxbGdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NzU0ODgsImV4cCI6MjEwMTA1MTQ4OH0.-kcVKnpSHkFitLLyk-ntSHAWPpIa_SpThOIa7FGpbV8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentLang = 'en';
+        let latestRequestId = null;
+        let isAlarmActive = false;
+        let cachedSlips = [];
+        let doughnutChartInstance = null;
+        let barChartInstance = null;
+        let currentService = 'laundry';
+        let currentCountType = 'hotel';
+        let cart = {};
+        let currentImageData = null;
+        let selectedIdForModal = null;
+        let latestRoomNum = '';
+
+        const database = {
+            laundry: {
+                "GENTLEMEN": [
+                    { name: "Shirt", ar: "قميص", price: 22 }, { name: "T-Shirt", ar: "فانيلة", price: 15 }, { name: "Trousers", ar: "بنطلون", price: 24 },
+                    { name: "Under Shirt", ar: "قميص داخلي", price: 10 }, { name: "Under Pants", ar: "سروال داخلي", price: 12 }, { name: "Pajama Slack", ar: "بيجامة سلاك", price: 11 },
+                    { name: "Pajamas (2 Pcs)", ar: "بيجامة قطعتين", price: 22 }, { name: "Socks", ar: "جوارب", price: 6 }, { name: "Jacket", ar: "جاكيت", price: 34 },
+                    { name: "Dishdash", ar: "دشداشة", price: 30 }, { name: "Gutra", ar: "غترة", price: 10 }, { name: "Khafia", ar: "كوفية", price: 10 },
+                    { name: "Lungi", ar: "وزار", price: 15 }, { name: "Shorts", ar: "سروال قصير", price: 18 }, { name: "Track Suit", ar: "بدلة رياضة", price: 30 },
+                    { name: "Overall", ar: "افرول", price: 36 }, { name: "Gloves", ar: "قفازات", price: 6 }, { name: "Knee Pad", ar: "واقي الركبة", price: 6 }, { name: "Bandages", ar: "مشد رباط", price: 6 }
+                ],
+                "LADIES": [
+                    { name: "Dress", ar: "فستان", price: 42 }, { name: "Blouse", ar: "بلوزة", price: 24 }, { name: "Skirt", ar: "تنورة", price: 24 },
+                    { name: "Jacket", ar: "سترة/جاكيت", price: 30 }, { name: "Petticoat", ar: "كومبليزون", price: 10 }, { name: "Brassiere", ar: "صدرية/سوتيان", price: 12 },
+                    { name: "Trousers", ar: "بنطلون", price: 18 }, { name: "Night Gown", ar: "قميص نوم", price: 30 }, { name: "Dressing Gown", ar: "عباية", price: 30 },
+                    { name: "Panties", ar: "سروال داخلي", price: 12 }, { name: "Handkerchief", ar: "منديل", price: 6 }, { name: "Scarf", ar: "حجاب/شيلة", price: 15 }, { name: "Saree", ar: "ساري", price: 36 }
+                ],
+                "CHILDREN": [
+                    { name: "Child - Shorts", ar: "شورت", price: 7 }, { name: "Child - Trouser", ar: "بنطلون", price: 12 }, { name: "Child - Shirt", ar: "قميص", price: 7 },
+                    { name: "Child - T-Shirt", ar: "قميص خفيف", price: 12 }, { name: "Child - Dishdasha", ar: "دشداشة", price: 7 }, { name: "Child - Dress", ar: "فستان", price: 22 }
+                ]
+            },
+            dry: {
+                "GENTLEMEN": [
+                    { name: "Suit (2 pcs.)", ar: "بدلة قطعتين", price: 54 }, { name: "Trousers", ar: "بنطلون", price: 36 }, { name: "Jacket", ar: "جاكيت", price: 30 },
+                    { name: "Necktie", ar: "ربطة عنق", price: 18 }, { name: "Sweater", ar: "كنزة", price: 22 }, { name: "Shirt (Silk)", ar: "قميص حرير", price: 24 },
+                    { name: "Dishdash", ar: "دشداشة", price: 36 }, { name: "Gutra", ar: "غترة", price: 12 }, { name: "T-Shirt", ar: "قميص خفيف", price: 27 },
+                    { name: "Waist Coat", ar: "سترة", price: 22 }, { name: "Overall", ar: "افرول", price: 42 }, { name: "Cap / Hat", ar: "قبعة", price: 12 }
+                ],
+                "LADIES": [
+                    { name: "Dress", ar: "فستان", price: 48 }, { name: "Evening Dress", ar: "فستان سهرة", price: 54 }, { name: "Blouse", ar: "بلوزة", price: 36 },
+                    { name: "Skirt", ar: "تنورة", price: 27 }, { name: "Slacks / Trousers", ar: "بنطلون", price: 24 }, { name: "Jacket", ar: "جاكيت", price: 30 },
+                    { name: "Saree", ar: "ساري", price: 42 }, { name: "Abbaya", ar: "عباية", price: 36 }, { name: "T-Shirt", ar: "قميص خفيف", price: 27 },
+                    { name: "Scarf", ar: "حجاب/شيلة", price: 18 }, { name: "Pajama", ar: "بيجامة", price: 30 }, { name: "Child - Dress", ar: "فستان", price: 24 },
+                    { name: "Child - T-Shirt", ar: "قميص الأطفال", price: 12 }, { name: "Shawl", ar: "شال", price: 12 }
+                ]
+            },
+            pressing: {
+                "GENTLEMEN": [
+                    { name: "Suit (2 pcs.)", ar: "بدلة قطعتين", price: 30 }, { name: "Trousers", ar: "بنطلون", price: 12 }, { name: "Jacket", ar: "جاكيت", price: 18 },
+                    { name: "Shirt", ar: "قميص", price: 12 }, { name: "Necktie", ar: "ربطة عنق", price: 12 }, { name: "Dishdash", ar: "دشداشة", price: 18 },
+                    { name: "Lungi", ar: "وزار", price: 12 }, { name: "T-Shirt", ar: "قميص خفيف", price: 10 }, { name: "Overall", ar: "افرول", price: 24 },
+                    { name: "Pajama Slack", ar: "بيجامة سلاك", price: 15 }, { name: "Gutra", ar: "غترة", price: 6 }, { name: "Shorts", ar: "سروال قصير / شورت", price: 10 }, { name: "Abbaya", ar: "عباية", price: 18 }
+                ],
+                "LADIES": [
+                    { name: "Blouse", ar: "بلوزة", price: 12 }, { name: "Dress", ar: "فستان", price: 30 }, { name: "Evening Dress", ar: "فستان سهرة", price: 42 },
+                    { name: "Skirt", ar: "تنورة", price: 15 }, { name: "Slacks / Trousers", ar: "بنطلون", price: 12 }, { name: "Jacket", ar: "جاكيت", price: 24 },
+                    { name: "Saree", ar: "ساري", price: 24 }, { name: "Abbaya", ar: "عباية", price: 21 }, { name: "Night Gown", ar: "قميص نوم", price: 18 },
+                    { name: "Scarf", ar: "حجاب/شيلة", price: 10 }, { name: "Shawl", ar: "شال", price: 10 }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderItems();
+            fetchInitialData();
+            checkIncomingLaundryRequests();
+            setInterval(checkIncomingLaundryRequests, 5000);
+        });
+
+        async function fetchInitialData() {
+            const { data } = await supabaseClient.from('laundry_slips').select('*');
+            cachedSlips = data || [];
+        }
+
+        function playAlarm() {
+            const sound = document.getElementById('hotelAlarmSound');
+            if (sound && isAlarmActive) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio autoplay blocked:", e));
+            }
+        }
+
+        async function stopAlarmAndTransfer() {
+            isAlarmActive = false;
+            const sound = document.getElementById('hotelAlarmSound');
+            if (sound) { sound.pause(); sound.currentTime = 0; }
+            document.getElementById('laundryPlantAlert').classList.add('hidden');
+
+            if (latestRequestId) {
+                try {
+                    await supabaseClient.from('requests').update({ status: 'Collected' }).eq('id', latestRequestId);
+                } catch (e) { console.error(e); }
+            }
+            switchMainSection('liveRecord');
+        }
+
+        async function checkIncomingLaundryRequests() {
+            try {
+                const { data } = await supabaseClient.from('requests').select('*').ilike('service', '%laundry%').eq('status', 'Pending');
+                const alertBanner = document.getElementById('laundryPlantAlert');
+                if (data && data.length > 0) {
+                    const latestReq = data[data.length - 1];
+                    latestRequestId = latestReq.id;
+                    latestRoomNum = latestReq.room || latestReq.room_number || '---';
+                    const clientNote = latestReq.notes || latestReq.note || 'No notes.';
+                    
+                    document.getElementById('alertTitleText').innerText = `🚨 Laundry Request from Room ${latestRoomNum}!`;
+                    document.getElementById('alertClientNote').innerText = `Note: "${clientNote}"`;
+                    
+                    if (!isAlarmActive) {
+                        isAlarmActive = true;
+                        alertBanner.classList.remove('hidden');
+                        playAlarm();
+                    }
+                } else {
+                    if (!isAlarmActive) alertBanner.classList.add('hidden');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function isRoomNumberValid(val) {
+            const room = parseInt(val, 10);
+            if (isNaN(room)) return false;
+            return ((room >= 103 && room <= 144) || (room >= 201 && room <= 246) || (room >= 301 && room <= 348) || (room >= 401 && room <= 448) || (room >= 501 && room <= 520) || (room >= 601 && room <= 608));
+        }
+
+        function validateRoomNumber() {
+            const input = document.getElementById('roomNumber');
+            const errorMsg = document.getElementById('roomErrorMsg');
+            const saveBtn = document.getElementById('btnSaveRecord');
+            const val = input.value.trim();
+            if (val === '' || isRoomNumberValid(val)) {
+                input.className = "w-full border border-stone-200 rounded-xl p-3 text-sm font-bold bg-stone-50 outline-none";
+                errorMsg.classList.add('hidden');
+                saveBtn.disabled = false;
+                return true;
+            } else {
+                input.className = "w-full border-2 border-rose-500 rounded-xl p-3 text-sm font-bold bg-rose-50 text-rose-900 outline-none";
+                errorMsg.classList.remove('hidden');
+                saveBtn.disabled = true;
+                return false;
+            }
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            document.getElementById('btn-lang-en').className = lang === 'en' ? "px-2.5 py-1 rounded-full bg-remal-sand text-white shadow-sm font-bold" : "px-2.5 py-1 rounded-full text-stone-600";
+            document.getElementById('btn-lang-ar').className = lang === 'ar' ? "px-2.5 py-1 rounded-full bg-remal-sand text-white shadow-sm font-bold" : "px-2.5 py-1 rounded-full text-stone-600";
+            renderItems();
+        }
+
+        function switchMainSection(section) {
+            ['newRecord', 'liveRecord', 'pdfList', 'dashboard'].forEach(sec => {
+                document.getElementById(`section${sec.charAt(0).toUpperCase() + sec.slice(1)}`).classList.add('hidden');
+                document.getElementById(`navBtn${sec.charAt(0).toUpperCase() + sec.slice(1)}`).className = "py-2.5 px-1 rounded-2xl bg-stone-100 border border-stone-200 text-stone-700 transition flex flex-col items-center justify-center gap-0.5 font-bold";
+            });
+            document.getElementById(`section${section.charAt(0).toUpperCase() + section.slice(1)}`).classList.remove('hidden');
+            document.getElementById(`navBtn${section.charAt(0).toUpperCase() + section.slice(1)}`).className = "py-2.5 px-1 rounded-2xl bg-remal-sand text-white shadow-md transition flex flex-col items-center justify-center gap-0.5 font-bold";
+
+            if (section === 'liveRecord') chargerLiveOrders();
+            else if (section === 'pdfList') afficherListeBordereauxFromCloud();
+            else if (section === 'dashboard') renderManagementDashboard();
+        }
+
+        function selectCountType(type) {
+            currentCountType = type;
+            document.getElementById('btn-count-hotel').className = type === 'hotel' ? 'flex-1 py-2.5 rounded-xl bg-remal-sand text-white shadow-md font-bold' : 'flex-1 py-2.5 rounded-xl text-stone-600';
+            document.getElementById('btn-count-guest').className = type === 'guest' ? 'flex-1 py-2.5 rounded-xl bg-stone-900 text-white shadow-md font-bold' : 'flex-1 py-2.5 rounded-xl text-stone-600';
+            renderItems(); calculateGlobalTotals();
+        }
+
+        function switchService(service) {
+            currentService = service;
+            ['laundry', 'dry', 'pressing'].forEach(s => {
+                document.getElementById(`tab-service-${s}`).className = s === service ? "flex-1 py-2.5 rounded-xl bg-stone-900 text-white shadow-sm font-bold" : "flex-1 py-2.5 rounded-xl bg-stone-100 text-stone-700 font-bold";
+            });
+            renderItems();
+        }
+
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+            const serviceData = database[currentService];
+            for (const [catName, items] of Object.entries(serviceData)) {
+                const catHeader = document.createElement('div');
+                catHeader.className = 'bg-stone-100 text-stone-800 px-3 py-1.5 rounded-xl font-bold text-xs uppercase tracking-wider mb-2 mt-2';
+                catHeader.innerText = catName;
+                container.appendChild(catHeader);
+
+                items.forEach(item => {
+                    const key = `${currentService}_${item.name}`;
+                    const qty = cart[key] ? cart[key].qty : 0;
+                    const priceDisplay = currentCountType === 'hotel' ? '0.00 AED' : `${item.price.toFixed(2)} AED`;
+
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center py-2 border-b border-stone-100 text-xs';
+                    row.innerHTML = `
+                        <div>
+                            <p class="font-bold text-stone-900">${currentLang === 'ar' ? item.ar : item.name}</p>
+                            <p class="text-[10px] ${currentCountType === 'hotel' ? 'text-emerald-600 font-bold' : 'text-remal-sand font-semibold'}">${priceDisplay}</p>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-stone-100 p-1 rounded-xl">
+                            <button onclick="updateQty('${key}', '${item.name}', ${item.price}, -1)" class="w-6 h-6 bg-white text-stone-800 rounded font-bold shadow-sm">-</button>
+                            <span class="font-bold px-1 text-stone-900">${qty}</span>
+                            <button onclick="updateQty('${key}', '${item.name}', ${item.price}, 1)" class="w-6 h-6 bg-stone-900 text-white rounded font-bold shadow-sm">+</button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+        }
+
+        function updateQty(key, name, price, delta) {
+            if (!cart[key]) cart[key] = { qty: 0, price: price, name: name, service: currentService };
+            cart[key].qty += delta;
+            if (cart[key].qty <= 0) delete cart[key];
+            renderItems(); calculateGlobalTotals();
+        }
+
+        function calculateGlobalTotals() {
+            let totalClothes = 0; let subtotal = 0;
+            Object.values(cart).forEach(item => { totalClothes += item.qty; if (currentCountType === 'guest') subtotal += item.price * item.qty; });
+            const vat = subtotal * 0.05; const grandTotal = subtotal + vat;
+            document.getElementById('currentBordereauCount').innerText = `${totalClothes} pieces`;
+            document.getElementById('subTotal').innerText = `${subtotal.toFixed(2)} AED`;
+            document.getElementById('vatAmount').innerText = `${vat.toFixed(2)} AED`;
+            document.getElementById('grandTotal').innerText = `${grandTotal.toFixed(2)} AED`;
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { currentImageData = e.target.result; const img = document.getElementById('imagePreview'); img.src = currentImageData; img.classList.remove('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function sauvegarderBordereauToCloud() {
+            const roomNum = document.getElementById('roomNumber').value.trim();
+            const editingId = document.getElementById('editingRecordId').value;
+            if (!roomNum) { alert('Please enter room number.'); return; }
+            if (Object.keys(cart).length === 0 && !currentImageData) { alert('Select at least one garment.'); return; }
+
+            let totalClothes = 0; Object.values(cart).forEach(item => totalClothes += item.qty);
+            let subtotal = 0; if (currentCountType === 'guest') Object.values(cart).forEach(item => subtotal += item.price * item.qty);
+            const selectedOption = document.querySelector('input[name="foldingOption"]:checked')?.value || 'F — Folding';
+            const vat = subtotal * 0.05; const grandTotal = subtotal + vat;
+
+            const payload = { room: roomNum, count_type: currentCountType, options: { service_style: selectedOption }, items: cart, total_clothes: totalClothes, subtotal: subtotal, vat: vat, total: grandTotal, photo: currentImageData, status: 'Collected' };
+
+            if (editingId) {
+                await supabaseClient.from('laundry_slips').update(payload).eq('id', editingId);
+                alert(`Record for Room ${roomNum} updated!`);
+            } else {
+                await supabaseClient.from('laundry_slips').insert([payload]);
+                alert(`Record for Room ${roomNum} saved!`);
+            }
+            reinitialiserFormulaire();
+            switchMainSection('liveRecord');
+        }
+
+        function reinitialiserFormulaire() {
+            document.getElementById('roomNumber').value = ''; document.getElementById('editingRecordId').value = '';
+            cart = {}; currentImageData = null; document.getElementById('imagePreview').classList.add('hidden');
+            selectCountType('hotel'); renderItems(); calculateGlobalTotals();
+        }
+
+        async function chargerLiveOrders() {
+            const container = document.getElementById('liveOrdersList');
+            const { data } = await supabaseClient.from('laundry_slips').select('*');
+            cachedSlips = data || [];
+            cachedSlips.sort((a, b) => (parseInt(a.room) || 0) - (parseInt(b.room) || 0));
+
+            if (cachedSlips.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">No live orders.</p>`; return; }
+
+            container.innerHTML = '';
+            cachedSlips.forEach(entry => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'p-4 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-3';
+                const status = entry.status || 'Collected';
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-center cursor-pointer" onclick="ouvrirModalDetails(${entry.id})">
+                        <div>
+                            <span class="font-serif-luxury font-bold text-stone-900 text-sm">Room ${entry.room}</span>
+                            <span class="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">${entry.count_type}</span>
+                        </div>
+                        <div class="text-right font-bold text-remal-sand font-serif-luxury text-sm">${entry.total.toFixed(2)} AED</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-1 pt-2 border-t border-stone-200">
+                        <span class="text-[10px] font-bold px-2 py-1 rounded-lg bg-stone-200 text-stone-800">${status}</span>
+                        <div class="flex gap-1">
+                            <button onclick="updateOrderStatus(${entry.id}, 'Collected')" class="px-2 py-1 rounded text-[10px] font-bold bg-stone-900 text-white">Collected</button>
+                            <button onclick="updateOrderStatus(${entry.id}, 'Washing')" class="px-2 py-1 rounded text-[10px] font-bold bg-blue-600 text-white">Washing</button>
+                            <button onclick="updateOrderStatus(${entry.id}, 'Ready')" class="px-2 py-1 rounded text-[10px] font-bold bg-purple-600 text-white">Ready</button>
+                            <button onclick="updateOrderStatus(${entry.id}, 'Delivered')" class="px-2 py-1 rounded text-[10px] font-bold bg-emerald-600 text-white">Delivered</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        async function updateOrderStatus(id, newStatus) {
+            await supabaseClient.from('laundry_slips').update({ status: newStatus }).eq('id', id);
+            await chargerLiveOrders();
+        }
+
+        async function afficherListeBordereauxFromCloud() {
+            const { data } = await supabaseClient.from('laundry_slips').select('*');
+            cachedSlips = data || [];
+            filtrerListeCloud();
+        }
+
+        function filtrerListeCloud() {
+            const container = document.getElementById('laundryList');
+            const searchRoomVal = document.getElementById('searchRoom').value.toLowerCase().trim();
+            const searchDateVal = document.getElementById('searchDate').value;
+
+            let filtered = cachedSlips.filter(entry => {
+                const matchRoom = !searchRoomVal || String(entry.room).toLowerCase().includes(searchRoomVal);
+                let matchDate = !searchDateVal || (entry.created_at && entry.created_at.split('T')[0] === searchDateVal);
+                return matchRoom && matchDate;
+            });
+
+            if (filtered.length === 0) { container.innerHTML = `<p class="text-xs text-stone-400 text-center py-4">No records found.</p>`; return; }
+
+            container.innerHTML = '';
+            filtered.forEach(entry => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'p-3.5 bg-stone-50 rounded-2xl border border-stone-200 text-xs flex justify-between items-center cursor-pointer hover:bg-stone-100';
+                itemDiv.onclick = () => ouvrirModalDetails(entry.id);
+                itemDiv.innerHTML = `
+                    <div>
+                        <span class="font-serif-luxury font-bold text-stone-900 text-sm">Room ${entry.room}</span>
+                        <span class="text-[10px] text-stone-500 block">Status: ${entry.status || 'Collected'}</span>
+                    </div>
+                    <div class="text-right font-bold text-stone-900">
+                        <span class="text-remal-sand font-serif-luxury text-sm">${entry.total.toFixed(2)} AED</span>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        async function renderManagementDashboard() {
+            const { data } = await supabaseClient.from('laundry_slips').select('*');
+            cachedSlips = data || [];
+            let totalRevenue = 0, totalGarments = 0, statusCounts = { Collected: 0, Washing: 0, Ready: 0, Delivered: 0 }, revenueByDate = {};
+
+            cachedSlips.forEach(slip => {
+                totalRevenue += (slip.total || 0);
+                totalGarments += (slip.total_clothes || 0);
+                let st = slip.status || 'Collected';
+                if (statusCounts[st] !== undefined) statusCounts[st]++;
+                if (slip.created_at) {
+                    let dStr = slip.created_at.split('T')[0];
+                    revenueByDate[dStr] = (revenueByDate[dStr] || 0) + (slip.total || 0);
+                }
+            });
+
+            document.getElementById('kpiRevenue').innerText = `${totalRevenue.toFixed(2)} AED`;
+            document.getElementById('kpiOrders').innerText = cachedSlips.length;
+            document.getElementById('kpiGarments').innerText = `${totalGarments} pcs`;
+
+            const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+            doughnutChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: { labels: ['Collected', 'Washing', 'Ready', 'Delivered'], datasets: [{ data: [statusCounts.Collected, statusCounts.Washing, statusCounts.Ready, statusCounts.Delivered], backgroundColor: ['#78716c', '#2563eb', '#9333ea', '#059669'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+            });
+
+            const dates = Object.keys(revenueByDate).sort();
+            const revenues = dates.map(d => revenueByDate[d]);
+            const ctxBar = document.getElementById('revenueBarChart').getContext('2d');
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: dates.length > 0 ? dates : ['No Data'], datasets: [{ label: 'Revenue (AED)', data: revenues.length > 0 ? revenues : [0], backgroundColor: '#E2B383', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function ouvrirModalDetails(id) {
+            selectedIdForModal = id;
+            const entry = cachedSlips.find(e => e.id === id);
+            if (!entry) return;
+
+            document.getElementById('modalRoomNumDisplay').innerText = entry.room;
+            document.getElementById('modalDate').innerText = `Date: ${new Date(entry.created_at).toLocaleDateString()}`;
+            document.getElementById('modalTypeBadgeInline').innerText = entry.count_type === 'hotel' ? 'Hotel Count (Free)' : 'Guest Count';
+            document.getElementById('modalPackagingStyle').innerText = entry.options?.service_style || 'F — Folding';
+
+            const tbody = document.getElementById('modalTableBody'); tbody.innerHTML = '';
+            Object.values(entry.items || {}).forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-stone-100";
+                tr.innerHTML = `<td class="p-2.5 font-bold">${item.name}</td><td class="text-center p-2.5 font-bold">${item.qty}</td><td class="text-right p-2.5 font-bold">${(item.qty * item.price).toFixed(2)}</td>`;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('modalClothesCount').innerText = `${entry.total_clothes} pcs`;
+            document.getElementById('modalSubTotal').innerText = `${entry.subtotal.toFixed(2)} AED`;
+            document.getElementById('modalVat').innerText = `${entry.vat.toFixed(2)} AED`;
+            document.getElementById('modalTotal').innerText = `${entry.total.toFixed(2)} AED`;
+
+            const pContainer = document.getElementById('modalPhotoContainer');
+            pContainer.innerHTML = entry.photo ? `<p class="font-bold text-xs mt-2">Proof Photo:</p><img src="${entry.photo}" class="w-full rounded-2xl border border-stone-200 mt-1">` : '';
+
+            const whatsappMsg = encodeURIComponent(`*REMAL HOTEL - LAUNDRY SLIP*\nRoom: ${entry.room}\nTotal: ${entry.total.toFixed(2)} AED`);
+            document.getElementById('btnWhatsappShare').href = `https://wa.me/?text=${whatsappMsg}`;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function fermerModal() { document.getElementById('detailModal').classList.add('hidden'); selectedIdForModal = null; }
+
+        function editerBordereauActuel() {
+            if (!selectedIdForModal) return;
+            const entry = cachedSlips.find(e => e.id === selectedIdForModal);
+            if (!entry) return;
+            document.getElementById('editingRecordId').value = entry.id;
+            document.getElementById('roomNumber').value = entry.room;
+            cart = entry.items || {};
+            selectCountType(entry.count_type || 'hotel');
+            fermerModal();
+            switchMainSection('newRecord');
+        }
+
+        function genererPDF() {
+            const element = document.getElementById('pdfExportArea');
+            const roomVal = document.getElementById('modalRoomNumDisplay').innerText;
+            html2pdf().set({ margin: 8, filename: `Laundry_Slip_Room_${roomVal}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save();
+        }
+
+        async function supprimerBordereauActuel() {
+            if (!selectedIdForModal) return;
+            if (confirm(`Delete this record?`)) {
+                await supabaseClient.from('laundry_slips').delete().eq('id', selectedIdForModal);
+                fermerModal();
+                await afficherListeBordereauxFromCloud();
+            }
+        }
+    </script>
+</body>
+</html>
