@@ -1,0 +1,686 @@
+[
+  {
+    "id": 101,
+    "category": "Breakfast",
+    "name_en": "Continental",
+    "name_ar": "كونتيننتال",
+    "desc_en": "Croissant, Muffin, Danish and Seasonal Sliced Fruits",
+    "desc_ar": "تشكيلة من الكرواسون والمفن والدانش، وفواكه موسمية مقطعة",
+    "price": 49.00
+  },
+  {
+    "id": 102,
+    "category": "Breakfast",
+    "name_en": "Emirati Flavors",
+    "name_ar": "الفطور بالطعم الإماراتي",
+    "desc_en": "Harees, Chebab, Balaleet, Arabic Cheese, Labneh, Olives, Cucumber, Tomatoes, Foul Medames, Egg Shakshuka, Kuboos, and Seasonal Sliced Fruits",
+    "desc_ar": "هريس، جباب، بلاليط، جبن عربي، لبنة، زيتون، خيار، طماطم، فول مدمس، شكشوكة البيض، خبز، وفواكه موسمية مقطعة",
+    "price": 59.00
+  },
+  {
+    "id": 103,
+    "category": "Breakfast",
+    "name_en": "Arabic Breakfast",
+    "name_ar": "فطور عربي",
+    "desc_en": "Hummus, Falafel, Foul Medames, Labneh, Halloumi White Cheese, Fried Egg, Assorted Vegetables, Olives, Mixed Pickles, and Seasonal Fruits",
+    "desc_ar": "حمص، فلافل، فول مدمس، لبنة، جبنة حلومي، بيض مقلي، تشكيلة من الخضروات، زيتون، مخللات مشكلة، وفواكه موسمية",
+    "price": 59.00
+  },
+  {
+    "id": 104,
+    "category": "Breakfast",
+    "name_en": "International",
+    "name_ar": "العالمي",
+    "desc_en": "Fresh bakery basket, Two eggs prepared to your liking, Chicken sausage, turkey bacon, and hash brown potatoes, Grilled tomatoes, sautéed mushrooms, and baked beans, Yogurt with dried fruits and nuts or mixed berries, Seasonal sliced fruits",
+    "desc_ar": "سلة مخبوزات طازجة، بيضتان تحضران حسب رغبتك، سجق دجاج، لحم ديك رومي مقدد، بطاطس هاش براون، طماطم مشوية، فطر سوتيه، فاصوليا مطهوة، زبادي مع فواكه مجففة ومكسرات أو توت مشكل، وفواكه موسمية مقطعة",
+    "price": 61.00
+  },
+  {
+    "id": 105,
+    "category": "Breakfast",
+    "name_en": "Choice of Eggs",
+    "name_ar": "اختيارات من البيض",
+    "desc_en": "Scrambled Eggs, Fried Eggs, Boiled Eggs, Plain Omelette, Vegetable Omelette, Cheese Omelette, Poached Eggs, Sunny Side Up Eggs",
+    "desc_ar": "بيض مخفوق، بيض مقلي، بيض مسلوق، أومليت سادة، أومليت بالخضار، أومليت بالجبن، بيض مسلوق (بوشيه)، بيض عيون",
+    "price": 25.00
+  },
+  {
+    "id": 106,
+    "category": "Breakfast",
+    "name_en": "Shakshuka",
+    "name_ar": "شكشوكة",
+    "desc_en": "Poached eggs in a spicy tomato and bell pepper sauce, seasoned with garlic and onions. Served with Arabic bread.",
+    "desc_ar": "بيض مسلوق بطريقة بوشيه في صلصة طماطم حارة مع الفلفل، متبل بالثوم والبصل، يقدم مع الخبز العربي.",
+    "price": 30.00
+  },
+  {
+    "id": 107,
+    "category": "Breakfast",
+    "name_en": "Eggs Benedict with Turkey Ham",
+    "name_ar": "بيض بندكت مع ديك رومي",
+    "desc_en": "Poached eggs and turkey ham on a toasted English muffin, topped with rich Hollandaise sauce.",
+    "desc_ar": "بيض مسلوق (بوشيه) مع هام ديك رومي، يقدم على مافن إنجليزي محمص مع صلصة الهولندييز",
+    "price": 30.00
+  },
+  {
+    "id": 108,
+    "category": "Breakfast",
+    "name_en": "Eggs Benedict with Smoked Salmon",
+    "name_ar": "بيض بندكت مع سلمون مدخن",
+    "desc_en": "Poached eggs and smoked salmon on a toasted English muffin, topped with creamy Hollandaise sauce.",
+    "desc_ar": "بيض مسلوق (بوشيه) مع سلمون مدخن، يقدم على مافن إنجليزي محمص مع صلصة الهولندييز",
+    "price": 35.00
+  },
+  {
+    "id": 201,
+    "category": "Soup",
+    "name_en": "Traditional Lentil Soup",
+    "name_ar": "شوربة العدس",
+    "desc_en": "With roasted cumin, fresh lemon and crispy pita bread",
+    "desc_ar": "تُقدَّم مع كمون محمص، ليمون طازج وخبز بيتا مقرمش",
+    "price": 25.00
+  },
+  {
+    "id": 202,
+    "category": "Soup",
+    "name_en": "Minestrone Soup",
+    "name_ar": "شوربة المينستروني",
+    "desc_en": "Classic Italian vegetable soup with pasta and herbs",
+    "desc_ar": "شوربة إيطالية كلاسيكية من الخضار مع المعكرونة والأعشاب",
+    "price": 25.00
+  },
+  {
+    "id": 203,
+    "category": "Soup",
+    "name_en": "Harira Soup",
+    "name_ar": "شوربة الحريرة",
+    "desc_en": "Moroccan spiced soup made with lentils, chickpeas and tomatoes",
+    "desc_ar": "شوربة مغربية متبلة من العدس والحمص والطماطم",
+    "price": 25.00
+  },
+  {
+    "id": 204,
+    "category": "Soup",
+    "name_en": "Soup of the Day",
+    "name_ar": "شوربة اليوم",
+    "desc_en": "Chef's daily special, freshly prepared with seasonal ingredients",
+    "desc_ar": "الشوربة اليومية المميزة من إعداد الشيف، تُحضر طازجة باستخدام مكونات موسمية مختارة",
+    "price": 25.00
+  },
+  {
+    "id": 301,
+    "category": "Salads and Mezzeh",
+    "name_en": "Classic Caesar Salad",
+    "name_ar": "سلطة سيزر الكلاسيكية",
+    "desc_en": "Lettuce, shaved parmesan cheese, Caesar dressing, croutons",
+    "desc_ar": "خس، جبنة بارميزان مبشورة، صلصة سيزر، خبز محمص",
+    "price": 45.00
+  },
+  {
+    "id": 302,
+    "category": "Salads and Mezzeh",
+    "name_en": "Chicken Caesar Salad",
+    "name_ar": "سلطة سيزر مع الدجاج",
+    "desc_en": "Lettuce, chicken, beef bacon, shaved parmesan cheese, Caesar dressing, croutons",
+    "desc_ar": "خس، دجاج، لحم بقري مقدد، جبنة بارميزان مبشورة، صلصة سيزر، خبز محمص",
+    "price": 49.00
+  },
+  {
+    "id": 303,
+    "category": "Salads and Mezzeh",
+    "name_en": "Shrimps Caesar Salad",
+    "name_ar": "سلطة سيزر بالروبيان",
+    "desc_en": "Lettuce, grilled shrimps, parmesan cheese, Caesar dressing, croutons",
+    "desc_ar": "خس، روبيان مشوي، جبنة بارميزان، صلصة سيزر، خبز محمص",
+    "price": 59.00
+  },
+  {
+    "id": 304,
+    "category": "Salads and Mezzeh",
+    "name_en": "Quinoa Salad",
+    "name_ar": "سلطة الكينوا",
+    "desc_en": "Quinoa combined with finely chopped parsley and tomato",
+    "desc_ar": "كينوا مع بقدونس وطماطم مفرومة ناعماً",
+    "price": 40.00
+  },
+  {
+    "id": 305,
+    "category": "Salads and Mezzeh",
+    "name_en": "Fattoush",
+    "name_ar": "فتوش",
+    "desc_en": "Lettuce, mint, zaatar, tomatoes, peppers, cucumber, onion, radish, olive oil, lemon juice, pomegranate molasses",
+    "desc_ar": "خس، نعناع، زعتر، طماطم، فلفل، خيار، بصل، فجل، زيت زيتون، عصير ليمون، دبس الرمان",
+    "price": 40.00
+  },
+  {
+    "id": 306,
+    "category": "Salads and Mezzeh",
+    "name_en": "Warak Enab (Vine Leaves)",
+    "name_ar": "ورق عنب",
+    "desc_en": "Stuffed grape leaves with rice, herbs, and lemon",
+    "desc_ar": "ورق عنب محشو بالأرز والأعشاب والليمون",
+    "price": 40.00
+  },
+  {
+    "id": 401,
+    "category": "Sandwich and Burger",
+    "name_en": "Beef Burger",
+    "name_ar": "برجر لحم بقري",
+    "desc_en": "Juicy beef patty with mayonnaise, lettuce, tomato, gherkins, cheddar cheese, and caramelized onions, served with French fries",
+    "desc_ar": "برجر لحم بقري مع مايونيز، خس، طماطم، خيار مخلل، جبنة شيدر وبصل مكرمل، يُقدم مع بطاطس مقلية",
+    "price": 60.00
+  },
+  {
+    "id": 402,
+    "category": "Sandwich and Burger",
+    "name_en": "Mac Beef Burger",
+    "name_ar": "برجر لحم بقري ماك",
+    "desc_en": "Special beef patty with signature toppings, served with French fries",
+    "desc_ar": "برجر لحم بقري مميز مع مكونات خاصة، يُقدم مع بطاطس مقلية",
+    "price": 65.00
+  },
+  {
+    "id": 403,
+    "category": "Sandwich and Burger",
+    "name_en": "Grilled Chicken Burger",
+    "name_ar": "برجر الدجاج المشوي",
+    "desc_en": "Juicy chicken patty with mayonnaise, tomato, jalapeño, lettuce, and mozzarella cheese, served with French fries",
+    "desc_ar": "برجر دجاج مع مايونيز، طماطم، هلابينو، خس وجبنة موزاريلا، يُقدم مع بطاطس مقلية",
+    "price": 55.00
+  },
+  {
+    "id": 404,
+    "category": "Sandwich and Burger",
+    "name_en": "Club Sandwich",
+    "name_ar": "كلوب ساندويتش",
+    "desc_en": "Triple decker with turkey bacon, lettuce, tomato, chicken mousse, cheese, fried egg, cocktail sauce, served with French fries",
+    "desc_ar": "توست مع ثلاث طبقات من لحم ديك رومي مقدد، خس، طماطم، موس دجاج، جبنة، بيض مقلي وصوص كوكتيل، يُقدم مع بطاطس مقلية",
+    "price": 60.00
+  },
+  {
+    "id": 405,
+    "category": "Sandwich and Burger",
+    "name_en": "Fish and Chips",
+    "name_ar": "سمك مقلي مع بطاطس مقلية",
+    "desc_en": "Crispy battered fried fish served with tartar sauce and French fries",
+    "desc_ar": "أصابع سمك مقلية مقرمشة تُقدم مع صلصة التارتار والبطاطس المقلية",
+    "price": 69.00
+  },
+  {
+    "id": 406,
+    "category": "Sandwich and Burger",
+    "name_en": "Chicken Quesadilla",
+    "name_ar": "كاساديا الدجاج",
+    "desc_en": "Chicken with Mexican flavors, capsicum, chopped onions, peppers, tomatoes, and mixed cheese, served with tomato salsa, sour cream and avocado sauce",
+    "desc_ar": "دجاج بالنكهة المكسيكية مع فلفل رومي، بصل، طماطم، جبنة مشكلة تُقدم مع صلصة الطماطم، كريمة حامضة وصوص الأفوكادو",
+    "price": 60.00
+  },
+  {
+    "id": 407,
+    "category": "Sandwich and Burger",
+    "name_en": "Smoked Salmon Sandwich",
+    "name_ar": "ساندويتش سلمون مدخن",
+    "desc_en": "Smoked salmon with cream cheese, capers, rocket leaves, and onion slices, served with French fries",
+    "desc_ar": "سلمون مدخن مع جبنة كريمية، كابرز، أوراق جرجير وشريحة بصل، يُقدم مع بطاطس مقلية",
+    "price": 55.00
+  },
+  {
+    "id": 408,
+    "category": "Sandwich and Burger",
+    "name_en": "Cheese Sandwich",
+    "name_ar": "ساندويتش الجبن",
+    "desc_en": "Melted cheese on toasted bread with fresh vegetables, served with French fries",
+    "desc_ar": "جبن ذائب على خبز محمص مع خضار طازجة، يُقدم مع بطاطس مقلية",
+    "price": 45.00
+  },
+  {
+    "id": 409,
+    "category": "Sandwich and Burger",
+    "name_en": "Chicken Steak Sandwich",
+    "name_ar": "ساندويتش ستيك الدجاج",
+    "desc_en": "Grilled chicken steak with sautéed vegetables, sauce, and mozzarella cheese, served with Cajun-spiced potato wedges",
+    "desc_ar": "ستيك دجاج مشوي مع خضار سوتيه وصوص وجبنة موزاريلا، يُقدم مع بطاطس ويدجز متبلة بالكاجون",
+    "price": 60.00
+  },
+  {
+    "id": 410,
+    "category": "Sandwich and Burger",
+    "name_en": "Beef Steak Sandwich",
+    "name_ar": "ساندويتش ستيك اللحم البقري",
+    "desc_en": "Grilled beef steak with cheddar cheese, fresh vegetables, and sauce, served with French fries",
+    "desc_ar": "ستيك لحم بقري مشوي مع جبنة شيدر، خضار طازجة وصوص، يُقدم مع بطاطس مقلية",
+    "price": 65.00
+  },
+  {
+    "id": 501,
+    "category": "Pizza",
+    "name_en": "Margherita",
+    "name_ar": "مارغريتا",
+    "desc_en": "Mozzarella cheese, tomato sauce, oregano",
+    "desc_ar": "جبن موزاريلا، صلصة الطماطم، أوريغانو",
+    "price": 49.00
+  },
+  {
+    "id": 502,
+    "category": "Pizza",
+    "name_en": "Vadodara",
+    "name_ar": "فادودارا",
+    "desc_en": "Grilled zucchini, eggplant, bell peppers, mushrooms, and sun-dried tomatoes with mozzarella cheese and tomato sauce",
+    "desc_ar": "كوسة مشوية، باذنجان مشوي، فلفل رومي، فطر، طماطم مجففة مع جبن موزاريلا وصلصة الطماطم",
+    "price": 59.00
+  },
+  {
+    "id": 503,
+    "category": "Pizza",
+    "name_en": "Cajun Spiced Chicken",
+    "name_ar": "دجاج متبل بالكاجون",
+    "desc_en": "Tomato sauce, mozzarella, basil, oregano, grilled Cajun-spiced chicken, roasted bell peppers, and rocket leaves",
+    "desc_ar": "صلصة الطماطم، جبن موزاريلا، ريحان، أوريغانو، دجاج مشوي متبل بالكاجون، فلفل رومي مشوي وأوراق الجرجير",
+    "price": 65.00
+  },
+  {
+    "id": 504,
+    "category": "Pizza",
+    "name_en": "Polo",
+    "name_ar": "بولو",
+    "desc_en": "Thinly sliced chicken and mushrooms on tomato sauce, finished with oregano",
+    "desc_ar": "شرائح دجاج رفيعة مع فطر على صلصة الطماطم، مع لمسة من الأوريغانو",
+    "price": 60.00
+  },
+  {
+    "id": 505,
+    "category": "Pizza",
+    "name_en": "Pepperoni",
+    "name_ar": "بيبروني",
+    "desc_en": "Mozzarella, beef pepperoni, tomato sauce",
+    "desc_ar": "جبن موزاريلا، بيبروني لحم بقري، صلصة الطماطم",
+    "price": 65.00
+  },
+  {
+    "id": 506,
+    "category": "Pizza",
+    "name_en": "Gorgonzola",
+    "name_ar": "غورغونزولا",
+    "desc_en": "Gorgonzola and mozzarella cheese on tomato sauce, topped with oregano and pesto drizzle",
+    "desc_ar": "جبن غورغونزولا وموزاريلا على صلصة الطماطم، مع أوريغانو ولمسة من صلصة البيستو",
+    "price": 69.00
+  },
+  {
+    "id": 601,
+    "category": "Pasta",
+    "name_en": "Spaghetti Bolognese",
+    "name_ar": "سباغيتي بولونيز",
+    "desc_en": "Classic Italian pasta with rich tomato sauce, minced beef, garlic, and herbs",
+    "desc_ar": "سباغيتي إيطالية كلاسيكية بصلصة طماطم غنية مع لحم مفروم، ثوم وأعشاب",
+    "price": 56.00
+  },
+  {
+    "id": 602,
+    "category": "Pasta",
+    "name_en": "Ravioli Pasta with Spinach & Ricotta",
+    "name_ar": "رافيولي بالسبانخ والريكوتا",
+    "desc_en": "Pasta filled with ricotta, spinach, and Parmesan, served with light tomato or creamy onion sauce",
+    "desc_ar": "باستا محشوة بجبن الريكوتا والسبانخ والبارميزان، تقدم مع صلصة طماطم خفيفة أو صلصة بصل كريمية",
+    "price": 69.00
+  },
+  {
+    "id": 603,
+    "category": "Pasta",
+    "name_en": "Fettuccine Alfredo with Grilled Chicken",
+    "name_ar": "فيتوتشيني ألفريدو مع دجاج مشوي",
+    "desc_en": "Fettuccine in rich creamy Alfredo sauce topped with grilled chicken",
+    "desc_ar": "فيتوتشيني بصلصة ألفريدو كريمية غنية مع دجاج مشوي",
+    "price": 60.00
+  },
+  {
+    "id": 604,
+    "category": "Pasta",
+    "name_en": "Tagliatelle with Shrimp & Spring Onion Sauce",
+    "name_ar": "تالياتيلي بالروبيان وصلصة البصل الأخضر",
+    "desc_en": "Fresh tagliatelle pasta with shrimp in a light spring onion cream sauce",
+    "desc_ar": "تالياتيلي طازجة مع روبيان بصلصة كريمية خفيفة بنكهة البصل الأخضر",
+    "price": 60.00
+  },
+  {
+    "id": 701,
+    "category": "Main Course",
+    "name_en": "Lamb Machboos",
+    "name_ar": "مجبوس لحم",
+    "desc_en": "Fragrant rice with tender lamb and Middle Eastern spices, served with tomato salsa",
+    "desc_ar": "أرز متبل مطبوخ مع لحم غنم طري وبهارات شرق أوسطية، يقدم مع صلصة الطماطم",
+    "price": 75.00
+  },
+  {
+    "id": 702,
+    "category": "Main Course",
+    "name_en": "Chicken Machboos",
+    "name_ar": "مجبوس دجاج",
+    "desc_en": "Rice cooked with tender bone-in chicken",
+    "desc_ar": "أرز مطبوخ مع دجاج طري بالعظم",
+    "price": 65.00
+  },
+  {
+    "id": 703,
+    "category": "Main Course",
+    "name_en": "Chicken Kabsa",
+    "name_ar": "كبسة دجاج",
+    "desc_en": "Traditional spiced rice with slow-cooked chicken",
+    "desc_ar": "أرز متبل تقليدي مع دجاج مطبوخ ببطء",
+    "price": 70.00
+  },
+  {
+    "id": 704,
+    "category": "Main Course",
+    "name_en": "Chicken Tikka Biryani",
+    "name_ar": "برياني دجاج تيكا",
+    "desc_en": "Basmati rice layered with marinated chicken tikka, served with raita, papad, and pickle",
+    "desc_ar": "أرز بسمتي مع دجاج تيكا متبل، يقدم مع رايتا، باباد ومخلل",
+    "price": 65.00
+  },
+  {
+    "id": 705,
+    "category": "Main Course",
+    "name_en": "Lamb Biryani",
+    "name_ar": "برياني لحم",
+    "desc_en": "Basmati rice with tender lamb, spices, and fried onions",
+    "desc_ar": "أرز بسمتي مع لحم غنم طري، بهارات، وبصل مقلي",
+    "price": 80.00
+  },
+  {
+    "id": 706,
+    "category": "Main Course",
+    "name_en": "Vegetable Biryani",
+    "name_ar": "برياني خضار",
+    "desc_en": "Served with papadam, raita, pickles, and mango chutney",
+    "desc_ar": "يقدم مع بابادوم، رايتا، مخللات، وصلصة المانجو",
+    "price": 53.00
+  },
+  {
+    "id": 707,
+    "category": "Main Course",
+    "name_en": "Hammour Fish Curry",
+    "name_ar": "كاري سمك الهامور",
+    "desc_en": "Fresh hammour fish in aromatic curry sauce with steamed rice",
+    "desc_ar": "سمك هامور طازج مطهو بصلصة كاري غنية ويقدم مع أرز أبيض",
+    "price": 70.00
+  },
+  {
+    "id": 708,
+    "category": "Main Course",
+    "name_en": "Paneer Butter Masala",
+    "name_ar": "بانير بتر ماسالا",
+    "desc_en": "Paneer cubes in creamy tomato butter sauce",
+    "desc_ar": "مكعبات بانير مطهوة بصلصة طماطم كريمية بالزبدة",
+    "price": 60.00
+  },
+  {
+    "id": 710,
+    "category": "Main Course",
+    "name_en": "Vegetable Kurma",
+    "name_ar": "كورما خضار",
+    "desc_en": "Mixed vegetables in coconut-based curry",
+    "desc_ar": "خضار مشكلة مطهوة بصلصة كاري بجوز الهند",
+    "price": 60.00
+  },
+  {
+    "id": 711,
+    "category": "Main Course",
+    "name_en": "Butter Chicken Masala",
+    "name_ar": "دجاج بتر ماسالا",
+    "desc_en": "Chicken in rich tomato butter sauce",
+    "desc_ar": "دجاج مطهو بصلصة طماطم غنية بالزبدة",
+    "price": 65.00
+  },
+  {
+    "id": 712,
+    "category": "Main Course",
+    "name_en": "Kadai Paneer",
+    "name_ar": "كاداي بانير",
+    "desc_en": "Paneer with bell peppers and onions in spiced tomato gravy",
+    "desc_ar": "بانير مع فلفل رومي وبصل بصلصة طماطم متبلة",
+    "price": 60.00
+  },
+  {
+    "id": 713,
+    "category": "Main Course",
+    "name_en": "Gobi Manchurian",
+    "name_ar": "قرنبيط مانتشوريان",
+    "desc_en": "Crispy cauliflower in Indo-Chinese sauce",
+    "desc_ar": "قرنبيط مقرمش بصلصة هندية صينية",
+    "price": 60.00
+  },
+  {
+    "id": 714,
+    "category": "Main Course",
+    "name_en": "Grilled Salmon (200g)",
+    "name_ar": "سلمون مشوي (200 جم)",
+    "desc_en": "Grilled salmon with lemon butter sauce",
+    "desc_ar": "سلمون مشوي يقدم مع صلصة الزبدة والليمون",
+    "price": 90.00
+  },
+  {
+    "id": 715,
+    "category": "Main Course",
+    "name_en": "Lamb Chops",
+    "name_ar": "ريش لحم غنم",
+    "desc_en": "Grilled marinated lamb chops",
+    "desc_ar": "ريش لحم غنم متبلة ومشوِية",
+    "price": 85.00
+  },
+  {
+    "id": 716,
+    "category": "Main Course",
+    "name_en": "Grilled Chicken Breast (200g)",
+    "name_ar": "صدر دجاج مشوي (200 جم)",
+    "desc_en": "With mushroom sauce and steamed vegetables",
+    "desc_ar": "يُقدم مع صلصة الفطر وخضار مطهوة على البخار",
+    "price": 70.00
+  },
+  {
+    "id": 717,
+    "category": "Main Course",
+    "name_en": "Fried Shrimp",
+    "name_ar": "روبيان مقلي",
+    "desc_en": "Breaded shrimp served with tartar sauce",
+    "desc_ar": "روبيان مقلي بالبقسماط يقدم مع صلصة التارتار",
+    "price": 75.00
+  },
+  {
+    "id": 718,
+    "category": "Main Course",
+    "name_en": "Grilled Beef Tenderloin (200g)",
+    "name_ar": "فيليه لحم بقري مشوي (200 جم)",
+    "desc_en": "Juicy beef tenderloin grilled to perfection",
+    "desc_ar": "فيليه لحم بقري طري مشوي بإتقان",
+    "price": 85.00
+  },
+  {
+    "id": 719,
+    "category": "Main Course",
+    "name_en": "Nasi Goreng",
+    "name_ar": "ناسي جورينج",
+    "desc_en": "Indonesian fried rice with vegetables, egg, and chicken",
+    "desc_ar": "أرز مقلي إندونيسي مع خضار وبيض ودجاج",
+    "price": 65.00
+  },
+  {
+    "id": 720,
+    "category": "Main Course",
+    "name_en": "Plain Fried Rice",
+    "name_ar": "أرز مقلي عادي",
+    "desc_en": "Wok-fried rice with vegetables and chili soy sauce",
+    "desc_ar": "أرز مقلي مع خضار يقدم مع صلصة الصويا الحارة",
+    "price": 35.00
+  },
+  {
+    "id": 801,
+    "category": "Hot Beverage",
+    "name_en": "Espresso",
+    "name_ar": "إسبريسو",
+    "desc_en": "Classic single shot espresso",
+    "desc_ar": "إسبريسو",
+    "price": 16.00
+  },
+  {
+    "id": 802,
+    "category": "Hot Beverage",
+    "name_en": "Double Espresso",
+    "name_ar": "دبل إسبريسو",
+    "desc_en": "Rich double shot espresso",
+    "desc_ar": "دبل إسبريسو",
+    "price": 22.00
+  },
+  {
+    "id": 803,
+    "category": "Hot Beverage",
+    "name_en": "Turkish Coffee",
+    "name_ar": "قهوة تركية",
+    "desc_en": "Traditional brewed Turkish coffee",
+    "desc_ar": "قهوة تركية",
+    "price": 22.00
+  },
+  {
+    "id": 804,
+    "category": "Hot Beverage",
+    "name_en": "Cappuccino",
+    "name_ar": "كابتشينو",
+    "desc_en": "Espresso with steamed milk foam",
+    "desc_ar": "كابتشينو",
+    "price": 27.00
+  },
+  {
+    "id": 805,
+    "category": "Hot Beverage",
+    "name_en": "Caffè Latte",
+    "name_ar": "لاتيه",
+    "desc_en": "Espresso with steamed milk",
+    "desc_ar": "لاتيه",
+    "price": 27.00
+  },
+  {
+    "id": 806,
+    "category": "Hot Beverage",
+    "name_en": "Hot Chocolate",
+    "name_ar": "شوكولاتة ساخنة",
+    "desc_en": "Rich hot chocolate drink",
+    "desc_ar": "شوكولاتة ساخنة",
+    "price": 30.00
+  },
+  {
+    "id": 807,
+    "category": "Hot Beverage",
+    "name_en": "Americano",
+    "name_ar": "أمريكانو",
+    "desc_en": "Espresso diluted with hot water",
+    "desc_ar": "أمريكانو",
+    "price": 20.00
+  },
+  {
+    "id": 808,
+    "category": "Hot Beverage",
+    "name_en": "Iced Coffee",
+    "name_ar": "قهوة مثلجة",
+    "desc_en": "Chilled espresso beverage",
+    "desc_ar": "قهوة مثلجة",
+    "price": 22.00
+  },
+  {
+    "id": 809,
+    "category": "Hot Beverage",
+    "name_en": "Tea",
+    "name_ar": "شاي",
+    "desc_en": "Selection of fine teas",
+    "desc_ar": "أنواع مختارة من الشاي",
+    "price": 16.00
+  },
+  {
+    "id": 901,
+    "category": "Milkshake",
+    "name_en": "Chocolate Milkshake",
+    "name_ar": "ميلك شيك شوكولاتة",
+    "desc_en": "Milk, chocolate ice cream, chocolate sauce, sugar",
+    "desc_ar": "حليب، آيس كريم شوكولاتة، صوص شوكولاتة، سكر",
+    "price": 33.00
+  },
+  {
+    "id": 902,
+    "category": "Milkshake",
+    "name_en": "Vanilla Milkshake",
+    "name_ar": "ميلك شيك فانيليا",
+    "desc_en": "Milk, vanilla ice cream, sugar, vanilla",
+    "desc_ar": "حليب، آيس كريم فانيليا، سكر، فانيليا",
+    "price": 33.00
+  },
+  {
+    "id": 903,
+    "category": "Milkshake",
+    "name_en": "Strawberry Milkshake",
+    "name_ar": "ميلك شيك فراولة",
+    "desc_en": "Milk, strawberry ice cream, fresh strawberries, sugar",
+    "desc_ar": "حليب، آيس كريم فراولة، فراولة طازجة، سكر",
+    "price": 33.00
+  },
+  {
+    "id": 1001,
+    "category": "Mocktail",
+    "name_en": "Fruity",
+    "name_ar": "فروتي",
+    "desc_en": "Fresh banana, strawberry, mango, orange juice",
+    "desc_ar": "موز طازج، فراولة، مانجو، عصير برتقال",
+    "price": 33.00
+  },
+  {
+    "id": 1002,
+    "category": "Mocktail",
+    "name_en": "Piña Colada",
+    "name_ar": "بينا كولادا",
+    "desc_en": "Pineapple juice, coconut cream",
+    "desc_ar": "عصير أناناس، كريمة جوز الهند",
+    "price": 33.00
+  },
+  {
+    "id": 1003,
+    "category": "Mocktail",
+    "name_en": "Strawberry Margarita",
+    "name_ar": "مارغريتا الفراولة",
+    "desc_en": "Fresh strawberries, lime juice, lime-flavored seltzer",
+    "desc_ar": "فراولة طازجة، عصير ليمون أخضر، صودا بنكهة الليمون",
+    "price": 33.00
+  },
+  {
+    "id": 1004,
+    "category": "Mocktail",
+    "name_en": "Mojito",
+    "name_ar": "موهيتو",
+    "desc_en": "Fresh mint leaves, lime, demerara sugar, soda water",
+    "desc_ar": "أوراق نعناع طازجة، ليمون أخضر، سكر ديميرارا، مياه صودا",
+    "price": 33.00
+  },
+  {
+    "id": 1005,
+    "category": "Mocktail",
+    "name_en": "Mai Tai",
+    "name_ar": "ماي تاي",
+    "desc_en": "Lemon-lime soda, pineapple juice, orange juice, grenadine syrup",
+    "desc_ar": "مشروب صودا بالليمون، عصير أناناس، عصير برتقال، شراب الغرينادين",
+    "price": 33.00
+  },
+  {
+    "id": 1006,
+    "category": "Mocktail",
+    "name_en": "Nutella Hot Chocolate",
+    "name_ar": "شوكولاتة ساخنة مع نوتيلا",
+    "desc_en": "Milk, Nutella, cocoa",
+    "desc_ar": "حليب، نوتيلا، كاكاو",
+    "price": 33.00
+  },
+  {
+    "id": 1007,
+    "category": "Mocktail",
+    "name_en": "Banana Milk Coffee",
+    "name_ar": "قهوة مع حليب الموز",
+    "desc_en": "Ripe banana, coffee, milk, cinnamon",
+    "desc_ar": "موز ناضج، قهوة، حليب، قرفة",
+    "price": 33.00
+  }
+]
